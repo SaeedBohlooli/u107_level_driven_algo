@@ -4,11 +4,9 @@
     <title>p107 chart</title>
 </head>
 <body style="background-color: #fafafa; font-family: Arial, sans-serif;">
-    <h2>Select Date</h2>
-
     <!-- 🟢 Form sends backtest_date via GET -->
     <form method="get" action="/">
-        <label for="chart_date">Date:</label>
+        <label for="chart_date"> {{user_name}} - Date:</label>
         <select name="chart_date" id="chart_date" onchange="this.form.submit()">
             {% for date in available_dates %}
                 <option value="{{ date }}" {% if chart_date == date %}selected{% endif %}>

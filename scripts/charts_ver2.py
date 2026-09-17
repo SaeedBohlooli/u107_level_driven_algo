@@ -1099,6 +1099,7 @@ def index():
         charts_dir = f'../../portfolios/charts-backtest/{chart_date}/{portfolio_id}'
         mode = 'back_test'
     app_config = load_date_config(chart_date)
+    user_name = app_config.get("user_name") or "Unknown"
     drawing_objects_df = load_file_to_drawing_objects_df()
     hover_df = load_file_to_hover_df()
     close_levels_df = load_file_to_close_levels_df()
@@ -1145,7 +1146,8 @@ def index():
             plots_with_symbols=plots_with_symbols,  # ✅ pass paired data
             symbols=app_config['symbols'],  # ✅ pass symbols for navigation
             backtest_date=chart_date,
-            available_dates=available_dates
+            available_dates=available_dates,
+            user_name=user_name
         )
     else:
         return render_template(
@@ -1154,7 +1156,8 @@ def index():
             plots_with_symbols=plots_with_symbols,  # ✅ pass paired data
             symbols=app_config['symbols'],  # ✅ pass symbols for navigation
             backtest_date='',
-            available_dates=[])  # ✅ must pass this
+            available_dates=[],
+            user_name=user_name)  # ✅ must pass this
 
 
 if __name__ == '__main__':
