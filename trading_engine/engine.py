@@ -41,6 +41,7 @@ from trading_utils import position_router
 from trading_utils import user_request_router
 from trading_utils import ib_account
 from trading_utils import ib_pricing_async
+from trading_utils import json_utils
 
 
 from utils import atr_tolerance_helper
@@ -130,6 +131,9 @@ class TradingEngine:
                     continue
 
                 self.app_config = self.runtime.reload_config()
+                if self.app_config.get('user_name') == 'Saeed-PC19' and self.runtime.is_due('PRINT_CONFIG', interval_sec=20) :
+                    logger.info(f"[engine] app_config: {json_utils.print_map_pretty(self.app_config)}")
+
                 if self.runtime.is_due('ORCHESTRATE_EXPIRATIONS_STRIKES', interval_sec=60):
                     await options_helper.orchestrate_expirations_strikes(ib, self.app_config, self.application_state, self.market_data)
 

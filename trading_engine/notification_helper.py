@@ -3,7 +3,7 @@ logger = logging.getLogger(__name__)
 from trading_utils import email_utils
 
 def send_email(app_config, event='order_sent', symbol='', subject='', body=''):
-    if app_config['notification']['send_on_trades']:
+    if app_config['notification'].get('send_on_trades'):
         recipients = app_config['notification']['recipients']
 
         if event.lower() == 'order_sent':
