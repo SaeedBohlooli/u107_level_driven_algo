@@ -16,7 +16,7 @@ def check_and_send_alarms(app_config, application_state, market_data):
 
     if eval(app_config.get("alarms", {}).get("condition", "1 == 1")) == False:
         return
-
+    user_name = app_config.get("user_name", "unknown_user")
     for symbol in app_config.get("symbols", []):
         logger.info(f"[check_and_send_alarms] {symbol}")
         price = application_state.get("latest_prices", {}).get(symbol) # used in config
@@ -44,8 +44,9 @@ def check_and_send_alarms(app_config, application_state, market_data):
                     if should_send_email:
                         logger.info(f"[check_and_send_alarms] Sending email for {symbol}: {alarm_detail}")
                         recipients = app_config.get('alarms', {}).get('recipients', '')
-                        subject = app_config.get('alarms', {}).get('subject', f"Alarm Triggered - {symbol} - {alarm_detail['level']}")
-                        body = f"Alarm triggered for {symbol}: price {price} crossed {alarm_detail['level']} level "
+                        subject = app_config.get('alarms', {}).get('subject', f"Alarm - {symbol} - {alarm_detail['level']} - {user_name}")
+                        body = (f"Alarm triggered for {symbol}: price {price} crossed <br> {alarm_detail['level']} level <br> "
+                                f"{alarm_detail['condition']} <br> Time: {now.isoformat()} <br> User: {user_name}")
 
                         email_utils.send_email(to_emails=recipients, subject=subject, body=body)
                         alarm_state[f"crossed_{alarm_detail['level']}_alarm_date"] = str(now.isoformat())

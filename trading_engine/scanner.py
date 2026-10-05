@@ -27,6 +27,8 @@ def check_buy_sell_condition(ib, app_config, application_state, case, symbol, ma
     entry_retest_idx = 0
     failed_conditions_map = {}
     c_i = -1
+    result_only_false= {}
+
     try:
         df = market_data.dfs_map.get(symbol)
         if df is None:
@@ -65,6 +67,7 @@ def check_buy_sell_condition(ib, app_config, application_state, case, symbol, ma
             level_alias = app_config['cases'][case][side]['level_alias'] # used in config
             c_i = 0
             failed_conditions = f"<BR>{side}"
+            result_only_false_str = ""
             for condition in app_config['cases'][case][side]['cores']:
                 c_i = c_i + 1
                 logger.debug(f"[check_buy_sell_condition] {c_i}), {symbol}, case: {case}, side: {side}, condition: {condition} ")
@@ -74,6 +77,7 @@ def check_buy_sell_condition(ib, app_config, application_state, case, symbol, ma
                 evaluated_conditions_map.setdefault(side, {}).setdefault('valuated_conditions_cores',[]).append(evaluated)
                 if not evaluated:
                     failed_conditions = f"{failed_conditions}<BR> {c_i} {condition}"
+                    result_only_false_str = f"{result_only_false_str}|{c_i}: F"
 
             for condition in app_config['cases'][case][side].get('extras', []):
                 c_i = c_i + 1
@@ -84,8 +88,10 @@ def check_buy_sell_condition(ib, app_config, application_state, case, symbol, ma
                 evaluated_conditions_map.setdefault(side, {}).setdefault('valuated_conditions_extras',[]).append(evaluated)
                 if not evaluated:
                     failed_conditions = f"{failed_conditions}<BR> {c_i} {condition}"
+                    result_only_false_str = f"{result_only_false_str}|{c_i}: F"
 
             failed_conditions_map[side] = failed_conditions
+            result_only_false[side] = result_only_false_str
 
         if all(evaluated_conditions_map.get('long', {}).get('valuated_conditions', [])):
             can_buy = True
@@ -126,8 +132,8 @@ def check_buy_sell_condition(ib, app_config, application_state, case, symbol, ma
         # This is shown in the chart ...
 
         res_str = (f"res_{case}:<br>"
-                   f"{result_long} .. {long_breakout_idxs}.{long_retest_idxs} <br>"
-                   f"{result_short} .. {short_breakout_idxs}.{short_retest_idxs} <br>"
+                   f"long: {result_only_false.get('long', '')} .. {long_breakout_idxs}.{long_retest_idxs} <br>"
+                   f"short: {result_only_false.get('short', '')} .. {short_breakout_idxs}.{short_retest_idxs} <br>"
                    f"long_breakout: {long_breakout_idx}, long_retest: {long_retest_idx} <br>"
                    f"short_breakout: {short_breakout_idx}, short_retest: {short_retest_idx} <br>"
                    # f"price: {df['close'].iloc[-1]} at {date_utils.time_now_yyyy_mm_dd_hh_mm_ss()} end.<br>"
