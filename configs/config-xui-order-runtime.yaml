@@ -1,0 +1,6 @@
+p107--AAPL--OP--long--C--20261006-153957-1329-2:
+  take_profits:
+    t14_ema:
+      enabled: TRUE
+      trail: 1
+
