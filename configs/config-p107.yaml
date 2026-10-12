@@ -102,6 +102,19 @@ alarms:
     - { "level": "5MH", "condition": "df['close'].iloc[-2] > application_state['levels'][symbol]['5MH'] and df['close'].iloc[-3] < application_state['levels'][symbol]['5MH'] " }
     - { "level": "5ML", "condition": "df['close'].iloc[-2] < application_state['levels'][symbol]['5ML'] and df['close'].iloc[-3] > application_state['levels'][symbol]['5ML'] " }
 
+xui_position_defaults:
+  take_profits:
+    t6_trail_w_ema_9:
+      enabled: False
+      enabled_type: bool
+      trail: 1
+      trail_type: int
+
+  stop_losses:
+    s1:
+      enabled: False
+      enabled_type: bool
+
 
 child_configs:
   - config-strategy.yaml

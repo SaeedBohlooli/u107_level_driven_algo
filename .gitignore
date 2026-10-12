@@ -38,3 +38,4 @@ core/
 test/
 **/*.local.yaml
 #**/*runtime.yaml
+configs/config-xui-positions-runtime.yaml

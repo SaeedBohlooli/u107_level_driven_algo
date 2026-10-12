@@ -13,9 +13,11 @@ from trading_utils import ib_orders_async
 from trading_utils import ib_contract
 from trading_utils import json_utils
 from trading_utils import number_utils
+from trading_utils import config_utils
 from trading_core import application_state_router
 
 from trading_core.trading_ledger import TradingLedger
+from trading_core.file_manager import FileManager
 
 from trading_engine import options_helper
 from trading_engine import pricing_helper
@@ -227,6 +229,11 @@ async def check_buy_sell_result_to_send_order(ib, app_config, application_state,
             add_order_ref_to_application_state(application_state, open_order_ref=order_ref)
             add_open_order_to_capital_flow_df(data, capital_data)
             add_entry_message_to_application_state(application_state, symbol, str(df['date'].iloc[-1]), f'Order is sent {symbol} {case} {right}')
+            # save settings to config-xui-positions-runtime ...
+            xui_position_defaults = app_config.get("xui_position_defaults")
+            config_xui_order_runtime = config_utils.load_config(file_name=f'config-xui-positions-runtime.yaml', deep_merge=True)
+            config_xui_order_runtime.setdefault(f"xui_positions_settings", {})[order_ref] = xui_position_defaults
+            FileManager.save_yaml(config_xui_order_runtime, f"../configs/config-xui-positions-runtime.yaml")
         elif contract_type.lower() == 'future' and (can_buy or can_sell):
             right = 'long' if can_buy else 'short'
             side = 'long' if can_buy else 'short' # TODO need to be rmeoved ...
