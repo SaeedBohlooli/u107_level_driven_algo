@@ -149,7 +149,7 @@ def  add_to_key_levels_df(symbol, time_frame, key_level_name, price, memo='', un
 
 
 def compute_indicators(app_config, application_state, symbol, df):
-    if app_config.get('indicators', {}).get('enabled', False) == False:
+    if app_config.get("indicators", {}).get("enabled", False) == False:
         return df
 
     if RuntimeManager.is_due(f"compute_low_high_of_day-{symbol}", interval_sec=15, min_time_hhmm=930):

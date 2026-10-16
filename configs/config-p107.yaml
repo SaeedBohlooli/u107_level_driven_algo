@@ -104,7 +104,12 @@ alarms:
 
 xui_position_defaults:
   take_profits:
-    t6_trail_w_ema_9:
+    t1:
+      enabled: True
+      enabled_type: bool
+      trail: 1
+      trail_type: int
+    t6_trail_w_ema_21:
       enabled: False
       enabled_type: bool
       trail: 1
@@ -123,6 +128,7 @@ child_configs:
   - config-tps.yaml
   - config-xui-symbol-control.yaml
   - config-risk-management.yaml
+  - config-xui-positions-runtime.yaml
   - config.local.yaml
 
 historical_data:

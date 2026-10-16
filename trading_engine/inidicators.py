@@ -23,6 +23,9 @@ def populate_features(app_config, df):
     features_list = [df, atr_df, vwap_df]
 
     df = pd.concat(features_list, axis=1)
+    df['ema_9'] = df['close'].ewm(span=9, adjust=False).mean()
+    df['ema_21'] = df['close'].ewm(span=21, adjust=False).mean()
+
     if app_config.get("features", {}).get("print_last_few_rows", False):
         logger.info(f"[populate_features] df with features: \n{df.tail(5).to_markdown()}")
     return df

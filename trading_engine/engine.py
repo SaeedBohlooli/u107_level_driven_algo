@@ -131,7 +131,7 @@ class TradingEngine:
                     continue
 
                 self.app_config = self.runtime.reload_config()
-                if self.app_config.get('user_name') == 'Saeed-PC19' and self.runtime.is_due('PRINT_CONFIG', interval_sec=20) :
+                if self.app_config.get('user_name') == 'Saeed-PC19' and self.runtime.is_due('PRINT_CONFIG', interval_sec=5*60) :
                     logger.info(f"[engine] app_config: {json_utils.print_map_pretty(self.app_config)}")
 
                 if self.runtime.is_due('ORCHESTRATE_EXPIRATIONS_STRIKES', interval_sec=60):

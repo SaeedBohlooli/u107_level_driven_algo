@@ -7,17 +7,17 @@ def send_email(app_config, event='order_sent', symbol='', subject='', body=''):
         recipients = app_config['notification']['recipients']
 
         if event.lower() == 'order_sent':
-            subject = f"Order Sent {symbol} - {app_config['user_name']}"
+            subject = f"Order Sent {symbol} - {app_config['user_name']} - {subject}"
             body = (f"Order Sent ... <br> {body}"
                     f"<br>Later more detail will come ...<br>")
 
         elif event.lower() == 'stop_loss_sent':
-            subject = f"Stop Loss {symbol} - {app_config['user_name']}"
+            subject = f"Stop Loss {symbol} - {app_config['user_name']} - {subject}"
             body = (f"Stop Loss Sent ... <br> {body}"
                     f"<br>Later more detail will come ...<br>")
 
         elif event.lower() == 'take_profit_sent':
-            subject = f"Take Profit {symbol} - {app_config['user_name']}"
+            subject = f"Take Profit {symbol} - {app_config['user_name']} - {subject}"
             body = (f"Take Profit Sent ... <br> {body}"
                     f"<br>Later more detail will come ...<br>")
 

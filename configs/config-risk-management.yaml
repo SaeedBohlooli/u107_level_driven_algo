@@ -20,10 +20,7 @@ live_cases:
 order_cases:
   - case_7
   - case_8
-  - case_9
-  - case_10
   - case_manual
-
 available_cases:
   - one:
       case: case_2
@@ -39,6 +36,6 @@ take_profit_configs:
     enabled: true
     close_type: percentage
     number_of_trails: 1
-    percentage_change: 0.12
+    percentage_change: 0.1
     absolute_change: 0.3
-    memo: Taking some profit at 11% or 0.30 with 4 of
+    memo: Taking some profit at 10% or $0.30 with 4 of
