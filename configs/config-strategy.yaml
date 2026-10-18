@@ -116,7 +116,7 @@ cases:
       extras:
         - is_second_candle_after(min_seconds=15)
         - 9 == 9
-        - has_strong_close(df, side='up')
+        - has_strong_close(df, side='up') or df['close'].iloc[-1] > df['high'].iloc[-2]
         - is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='up', threshold=5)
 
 
@@ -134,7 +134,7 @@ cases:
       extras:
         - is_second_candle_after(min_seconds=15)
         - 9 == 9
-        - has_strong_close(df, side='down')
+        - has_strong_close(df, side='down') or df['close'].iloc[-1] < df['low'].iloc[-2]
         - is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='down', threshold=5)
 
   case_8:
@@ -156,7 +156,7 @@ cases:
       extras:
         - is_second_candle_after(min_seconds=15)
         - 9 == 9
-        - has_strong_close(df, side='up')
+        - has_strong_close(df, side='up') or df['close'].iloc[-1] > df['high'].iloc[-2]
         - is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='up', threshold=5)
 
     short:
@@ -173,7 +173,7 @@ cases:
       extras:
         - is_second_candle_after(min_seconds=15)
         - 9 == 9
-        - has_strong_close(df, side='down')
+        - has_strong_close(df, side='down') or df['close'].iloc[-1] < df['low'].iloc[-2]
         - is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='down', threshold=5)
 
   case_9:
@@ -218,11 +218,11 @@ cases:
         - 930 < get_last_record_hh_mm(df) < 1016 or get_mode(application_state) == 'live'
       extras:
         - not is_price_close_to_next_levels_ver_2(app_config, application_state, case, symbol, df, side='down', price=price, current_level=short_level, next_levels=['PDL'])
-        - abs (price - short_level) < 1.2 * atr_14
+        - abs (price - short_level) < 1.6 * atr_14
         # 10
         - 10 == 10 and price < application_state['levels'][symbol]['PDH'] # avoid going long above PDH - extra safety- if we are above PDH, low change we continue after 5MH breakout
         - skip_pdhl_and_qqq_check_enabled or price > levels['PDL'] or get_current_price(ib, application_state, 'QQQ') < application_state['levels']['QQQ']['5ML']
-        - abs (price - short_level) < 2
+        - abs (price - short_level) < 2.5
         - qqq_df['close'].iloc[-1] < qqq_df['open'].iloc[-1]
         - is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='down', threshold=5)
         - 15 == 15
@@ -268,11 +268,11 @@ cases:
         - 930 < get_last_record_hh_mm(df) < 1016 or get_mode(application_state) == 'live'
       extras:
         - levels['PDL'] > levels['5ML'] or get_current_price(ib, application_state, 'QQQ') < application_state['levels']['QQQ']['5ML']
-        - abs (price - short_level) < 1.2 * atr_14
+        - abs (price - short_level) < 1.6 * atr_14
         # 10
         - 10 == 10 and not is_price_close_to_next_levels_ver_2(app_config, application_state, case, symbol, df, side='down', price=price, current_level=short_level, next_levels=['PML'])
         - not is_price_close_to_next_levels_ver_2(app_config, application_state, case, symbol, df, side='down', price=price, current_level=short_level, next_levels=['5ML'])
-        - abs (price - short_level) < 2
+        - abs (price - short_level) < 2.5
         - qqq_df['close'].iloc[-1] <= qqq_df['open'].iloc[-1]
         - is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='down', threshold=5)
 
@@ -298,26 +298,32 @@ cases:
 
 
 stop_losses:
-    - right == 'C' and case != 'case_manual' and underlying_previous_candle_close < level_used_to_open - tolerance_amount and underlying_current_price < underlying_previous_candle_close
-    - right == 'P' and case != 'case_manual' and underlying_previous_candle_close > level_used_to_open + tolerance_amount and underlying_current_price > underlying_previous_candle_close
+    - right == 'C' and case != 'case_manual' 
+        and underlying_previous_candle_close < level_used_to_open - tolerance_amount 
+        and underlying_current_price < underlying_previous_candle_close
+    - right == 'P' and case != 'case_manual' 
+        and underlying_previous_candle_close > level_used_to_open + tolerance_amount 
+        and underlying_current_price > underlying_previous_candle_close
     - right == 'C' and user_defined_stop_loss !=0 and underlying_current_price < user_defined_stop_loss
     - right == 'P' and user_defined_stop_loss !=0 and underlying_current_price > user_defined_stop_loss
-    - right == 'C' and case in ('case_7', 'case_8') and underlying_previous_candle_close < level_used_to_open - tolerance_amount
-    - right == 'P' and case in ('case_7', 'case_8') and underlying_previous_candle_close > level_used_to_open + tolerance_amount
+#    - right == 'C' and case in ('case_7', 'case_8')
+#        and underlying_previous_candle_close < level_used_to_open - tolerance_amount
+#    - right == 'P' and case in ('case_7', 'case_8')
+#        and underlying_previous_candle_close > level_used_to_open + tolerance_amount
 #    - current_bid < entry_price * 0.70
 
 take_profits:
   t1:
-    enabled: true
+    enabled: false
     condition: >
       (current_bid > entry_price * percentage_change or current_bid - entry_price > absolute_change)
       and entry_price not in [0,-1] and current_bid not in [0,-1]
-    close_quantity_percentage: 0.6
+    close_quantity_percentage: 0.8
     close_quantity_numbner: total - number_of_trails
     memo: Taking some profit at 15% or 0.20 with 4 of 6 - percentage_change comes from config
 
   t2:
-    enabled: true
+    enabled: false
     condition: >
       (current_bid > entry_price * 1.30 or current_bid - entry_price > 0.70)
       and entry_price not in [0,-1] and current_bid not in [0,-1]
@@ -325,52 +331,73 @@ take_profits:
     memo: Taking some profit at 30% or 0.80 with 1 of 6
 
   t3:
-    enabled: true
+    enabled: false
     condition: >
       (current_bid > entry_price * 1.60 )
       and entry_price not in [0,-1] and current_bid not in [0,-1]
     close_quantity_percentage: -1
+    memo: Taking all profit at 60%
 
   t4_ev_if_t1:
-    enabled: true
+    enabled: false
     condition: >
-      (right == 'C' and is_executed_take_profits(application_state, symbol, take_profit_list=['t1']) and underlying_previous_candle_close < entry_underlying_price)
+      (right == 'C' and is_executed_take_profits(application_state, symbol, take_profit_list=['t1']) 
+        and underlying_previous_candle_close < entry_underlying_price)
       or
-      (right == 'P' and is_executed_take_profits(application_state, symbol, take_profit_list=['t1']) and underlying_previous_candle_close > entry_underlying_price)
+      (right == 'P' and is_executed_take_profits(application_state, symbol, take_profit_list=['t1']) 
+        and underlying_previous_candle_close > entry_underlying_price)
     close_quantity_percentage: -1
     memo: This is for break even - if we hit TP1, then we go for break even
 
   t4_ev_if_t2:
-    enabled: true
+    enabled: false
     condition: >
-      (right == 'C' and is_executed_take_profits(application_state, symbol, take_profit_list=['t2']) and underlying_previous_candle_close < entry_underlying_price)
+      (right == 'C' and is_executed_take_profits(application_state, symbol, take_profit_list=['t2']) 
+        and underlying_previous_candle_close < entry_underlying_price)
       or
-      (right == 'P' and is_executed_take_profits(application_state, symbol, take_profit_list=['t2']) and underlying_previous_candle_close > entry_underlying_price)
+      (right == 'P' and is_executed_take_profits(application_state, symbol, take_profit_list=['t2']) 
+        and underlying_previous_candle_close > entry_underlying_price)
     close_quantity_percentage: -1
-
     memo: This is for break even - if we hit TP2, then we go for break even
 
   t5_cr_lv:
-    enabled: true
+    enabled: false
     condition: >
-      (right == 'C' and is_price_crossed_levels(application_state, side='up', symbol=symbol, next_levels=['PDH'], current_price=underlying_current_price, entry_underlying_price=entry_underlying_price))
+      (right == 'C' and is_price_crossed_levels(application_state, side='up', symbol=symbol, next_levels=['PDH'], 
+            current_price=underlying_current_price, entry_underlying_price=entry_underlying_price))
       or
-      (right == 'P' and is_price_crossed_levels(application_state, side='down', symbol=symbol, next_levels=['PDL'], current_price=underlying_current_price, entry_underlying_price=entry_underlying_price))
+      (right == 'P' and is_price_crossed_levels(application_state, side='down', symbol=symbol, next_levels=['PDL'], 
+            current_price=underlying_current_price, entry_underlying_price=entry_underlying_price))
     close_quantity_percentage: 0.5
     memo: if we entered below major level and crossing level, we dump some ...
 
   t6_trail_t1:
-    enabled: true
-    condition: check_mark_revers_candles(application_state, symbol,take_profit_alias='t2', market_data=market_data)
+    enabled: false
+    condition: check_mark_revers_candles(application_state, symbol, take_profit_alias='t2', market_data=market_data)
     close_quantity_percentage: -1
     memo: for long after tp1, if we go below last down close candle, then we close the position and vice versa for short
 
-  t6_trail_w_ema_9:
-    enabled: false  # TODO check EMA_9 before anabling it
-    condition: symbol_df['close'].iloc[-1] < symbol_df['ema_9'].iloc[-1]  # for long after tp1, if we go below ema 9, then we close the position and vice versa for short
+  t6_trail_w_ema_21:
+    enabled: false
+    condition: >
+        ( right == 'C' 
+          and is_executed_take_profits(application_state, symbol, take_profit_list=['t1']) 
+          and symbol_df['close'].iloc[-2] > symbol_df['ema_21'].iloc[-2] 
+          and symbol_df['close'].iloc[-3] > symbol_df['ema_21'].iloc[-3]
+          and symbol_df['close'].iloc[-1] < symbol_df['ema_21'].iloc[-1]
+        )
+        or
+        ( right == 'P' 
+          and is_executed_take_profits(application_state, symbol, take_profit_list=['t1']) 
+          and symbol_df['close'].iloc[-2] < symbol_df['ema_21'].iloc[-2] 
+          and symbol_df['close'].iloc[-3] < symbol_df['ema_21'].iloc[-3]
+          and symbol_df['close'].iloc[-1] > symbol_df['ema_21'].iloc[-1]
+        )
     close_quantity_percentage: -1
     memo: for long after tp1, if we go below last down close candle, then we close the position and vice versa for short
 
+  # Always keep this enable
+  # This is for user defined take profit, if user set the take profit, then we will close the position based on that
   t7_user_defined_take_profit:
     enabled: true
     always_run: true
@@ -413,46 +440,3 @@ indicators:
         - EMA_9
         calculation: |
           df['EMA_9'] = df['close'].ewm(span=9, adjust=False).mean()
-#      two:
-#        active: true
-#        outputs_in_application_state:
-#        - EMA_20
-#        calculation: |
-#          df['EMA_20'] = df['close'].ewm(span=20, adjust=False).mean()
-#      three:
-#        active: true
-#        outputs_in_application_state:
-#        - EMA_50
-#        calculation: |
-#          df['EMA_50'] = df['close'].ewm(span=50, adjust=False).mean()
-#      four:
-#        active: true
-#        outputs_in_application_state:
-#        - VWAP
-#        memo: Session Volume Weighted Average Price
-#        calculation: |
-#          df['_tp']     = (df['high'] + df['low'] + df['close']) / 3
-#          df['_tp_vol'] = df['_tp'] * df['volume']
-#          df['_date']   = df.date
-#          df['VWAP']    = (df.groupby('_date')['_tp_vol'].transform('cumsum') /
-#                           df.groupby('_date')['volume'].transform('cumsum'))
-#          df.drop(columns=['_tp', '_tp_vol', '_date'], inplace=True)
-#      five:
-#        active: true
-#        outputs_in_application_state:
-#        - EMA_9_slope_pct
-#        - EMA_20_slope_pct
-#        - EMA_50_slope_pct
-#        - EMA_9_direction
-#        - EMA_20_direction
-#        - EMA_50_direction
-#
-#        memo: slope_period controls how many bars back to compare — 3 bars on 1m = ~3 min lag
-#        calculation: |
-#          slope_period = 3
-#          threshold    = 0.02          # % — below this = flat
-#          for col in ['EMA_9', 'EMA_20', 'EMA_50']:
-#              slope = (df[col] - df[col].shift(slope_period)) / df[col].shift(slope_period) * 100
-#              df[f'{col}_slope_pct'] = slope
-#              df[f'{col}_direction'] = np.where(slope >  threshold, 'up',
-#                                      np.where(slope < -threshold, 'down', 'flat'))

@@ -6,12 +6,10 @@ positioning:
   stop_after_wins: 1
   max_number_of_trades_per_day: 1
   max_num_of_trade_per_symbol_per_day: 2
-
 trading_session:
   trade_time: 930 < current_hh_mm_ny  < 1016
   market_time: 930 < current_hh_mm_ny < 1559
   busy_time: 933 < current_hh_mm_ny < 1016
-
 live_cases:
   - case_7
   - case_8
@@ -38,4 +36,4 @@ take_profit_configs:
     number_of_trails: 1
     percentage_change: 0.1
     absolute_change: 0.3
-    memo: Taking some profit at 10% or $0.30 with 4 of
+    memo: Taking some profit at 15% or $0.30

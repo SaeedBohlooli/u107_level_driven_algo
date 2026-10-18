@@ -86,7 +86,9 @@ async def check_for_stop_loss_and_take_profit(ib, app_config, application_state,
             current_bid, current_ask, current_last = await ib_pricing_async.get_or_subscribe_option_price(ib, symbol, expiry, strike,right)  # used in config
         else:
             current_bid, current_ask, current_last = await ib_pricing_async.get_or_subscribe_symbol_price(ib, symbol, contract_month)  # used in config
-
+        if current_bid is None or current_ask is None:
+            logger.warning(f"[check_for_stop_loss_and_take_profit] @@@  symbol: {symbol}, current_bid or current_ask is None, current_bid: {current_bid}, current_ask: {current_ask}")
+            continue
         mid_price = (current_bid + current_ask) / 2
 
         # TODO handle Future ...

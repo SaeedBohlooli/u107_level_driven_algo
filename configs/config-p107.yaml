@@ -107,13 +107,10 @@ xui_position_defaults:
     t1:
       enabled: True
       enabled_type: bool
-      trail: 1
-      trail_type: int
     t6_trail_w_ema_21:
       enabled: False
       enabled_type: bool
-      trail: 1
-      trail_type: int
+
 
   stop_losses:
     s1:
