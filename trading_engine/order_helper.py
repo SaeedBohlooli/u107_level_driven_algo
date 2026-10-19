@@ -14,6 +14,8 @@ from trading_utils import ib_contract
 from trading_utils import json_utils
 from trading_utils import number_utils
 from trading_utils import config_utils
+from trading_utils import ib_pricing_async
+
 from trading_core import application_state_router
 
 from trading_core.trading_ledger import TradingLedger
@@ -182,6 +184,8 @@ async def check_buy_sell_result_to_send_order(ib, app_config, application_state,
                 TradingLedger.add_to_list("signals", (symbol, f"NOT_ENOUGH_CAPITAL", df['high'].iloc[-1], df['date'].iloc[-1], f"NOT_ENOUGH_CAPITAL- ask: {ask}", 'YELLOW'))
                 continue
             order_ref = ib_orders_async.generate_order_ref(application_state.get('portfolio_id'), event='OPEN', symbol=symbol, side='long', unique_run_number=application_state.get('unique_run_number'), right= right)
+
+            underlying_price = await ib_pricing_async.get_or_subscribe_symbol_price(ib, symbol)
             await send_order(ib, option_contract, side='long', total_quantity=total_quantity, order_ref=order_ref, ib_account_id=app_config.get('ib_account_id'))
             data = {
                 'date': f'{date_utils.time_now()}',
@@ -190,7 +194,7 @@ async def check_buy_sell_result_to_send_order(ib, app_config, application_state,
                 'right': right,
                 'starting_quantity':total_quantity,
                 'available_quantity':total_quantity,
-                'entry_underlying_price': df['close'].iloc[-1] ,
+                'entry_underlying_price': underlying_price,
                 'entry_bid': bid, #TODO need to be fixed ...
                 'entry_ask': ask, #TODO need to be fixed ...
                 'entry_execution_price': 0,
@@ -257,7 +261,7 @@ async def check_buy_sell_result_to_send_order(ib, app_config, application_state,
                 'position_type': 'FUTURE',
                 'starting_quantity':total_quantity,
                 'available_quantity':total_quantity,
-                'entry_underlying_price': df['close'].iloc[-1],
+                'entry_underlying_price': underlying_price,
                 'unique_run_number': application_state.get('unique_run_number'),
                 'level_used_to_open': level_used,
                 'level_name': '',

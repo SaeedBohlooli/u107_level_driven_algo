@@ -296,8 +296,36 @@ cases:
       extras:
         - 1 == 1
 
-
 stop_losses:
+  sl_1:
+    enabled: true
+    condition: >
+      (right == 'C' and case != 'case_manual' 
+          and underlying_previous_candle_close < level_used_to_open - tolerance_amount 
+          and underlying_current_price < underlying_previous_candle_close)
+      or
+      (right == 'P' and case != 'case_manual' 
+          and underlying_previous_candle_close > level_used_to_open + tolerance_amount 
+          and underlying_current_price > underlying_previous_candle_close)
+    memo: sl_1
+
+  sl_manual:
+    enabled: true
+    condition: >
+      (right == 'C' and user_defined_stop_loss !=0 and underlying_current_price < user_defined_stop_loss)
+      or
+      (right == 'P' and user_defined_stop_loss !=0 and underlying_current_price > user_defined_stop_loss)
+    memo: sl_manual
+
+
+  sl_3:
+    enabled: false
+    condition: >
+      current_bid < entry_price * 0.70
+    memo: sl_70_percent
+
+
+stop_losses_delete_later:
     - right == 'C' and case != 'case_manual' 
         and underlying_previous_candle_close < level_used_to_open - tolerance_amount 
         and underlying_current_price < underlying_previous_candle_close

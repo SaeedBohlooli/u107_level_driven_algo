@@ -120,11 +120,22 @@ async def check_for_stop_loss_and_take_profit(ib, app_config, application_state,
                     f"underlying_current_price:, {underlying_current_price}, underlying_previous_candle_close: {underlying_previous_candle_close} ,tolerance_amount: {tolerance_amount}")
         logger.info(f"[check_for_stop_loss_and_take_profit] current_bid: {current_bid}, current_ask: {current_ask}")
         stop_loss_condition_evaluated = False
-        for stop_loss_condition in app_config.get('stop_losses', []):
+        # for stop_loss_condition in app_config.get('stop_losses', []):
+        for stop_loss_label in app_config['stop_losses']:
+
+            if xui_position_setting.get(stop_loss_label, {}).get('enabled') == True:
+                # xui is enabled explicitly, so we will continue to check it, even if the parent is disabled ...
+                pass
+                # continue
+            elif app_config['stop_losses'][stop_loss_label]['enabled'] == False or xui_position_setting.get(stop_loss_label, {}).get('enabled') == False:
+                # parent is false or the position is false, so we will skip it ...
+                logger.info(f"[check_for_stop_loss_and_take_profit] {symbol}, SL is disabled ... {stop_loss_label}")
+                continue
+
             if stop_loss_condition_evaluated:
                 logger.info(f"[check_for_stop_loss_and_take_profit] Already evalauted, so skip, stop_loss_condition_evaluated: {stop_loss_condition_evaluated}")
                 break
-            stop_loss_condition = stop_loss_condition.replace('\n', ' ')
+            stop_loss_condition = app_config['stop_losses'][stop_loss_label]['condition'].replace('\n', ' ')
             stop_loss_condition_evaluated = eval(stop_loss_condition)
 
             logger.info(f"[check_for_stop_loss_and_take_profit] symbol {symbol}, stop_loss_condition: {stop_loss_condition}, stop_loss_condition_evaluated: {stop_loss_condition_evaluated}")
@@ -204,14 +215,15 @@ async def check_for_stop_loss_and_take_profit(ib, app_config, application_state,
             if is_take_profit_executed(open_trade_info, take_profit_lable): # except t7_user_defined_take_profit
                 logger.info(f"[check_for_stop_loss_and_take_profit] {symbol}, TP already is executed ... {take_profit_lable}")
                 continue
-            # both are False
-            if xui_position_setting.get("take_profits",{}).get(take_profit_lable, False) == False and app_config.get('take_profits',{}).get(take_profit_lable ,{}).get('enabled',True) == False:
-                logger.info(f"[check_for_stop_loss_and_take_profit] {symbol}, TP is disabled in take_profits  ... {take_profit_lable}")
+
+            if xui_position_setting.get(take_profit_lable,{}).get('enabled') == True:
+                # xui is enabled explicitly, so we will continue to check it, even if the parent is disabled ...
+                pass
+                # continue
+            elif app_config['take_profits'][take_profit_lable]['enabled'] == False or xui_position_setting.get(take_profit_lable, {}).get('enabled') == False:
+                # parent is false or the position is false, so we will skip it ...
                 continue
-            # check of specific position only
-            if xui_position_setting.get("take_profits",{}).get(take_profit_lable, {}).get('enabled',True) == False:
-                logger.info(f"[check_for_stop_loss_and_take_profit] {symbol}, TP is disabled in for this postion only  ... {take_profit_lable}")
-                continue
+
             if app_config.get('take_profit_configs',{}).get(take_profit_lable ,{}).get('enabled',True) == False:
                 logger.info(f"[check_for_stop_loss_and_take_profit] {symbol}, TP is disabled in take_profit_configs  ... {take_profit_lable}")
                 continue

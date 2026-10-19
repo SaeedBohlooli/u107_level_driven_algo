@@ -110,8 +110,6 @@ xui_position_defaults:
     t6_trail_w_ema_21:
       enabled: False
       enabled_type: bool
-
-
   stop_losses:
     s1:
       enabled: False
