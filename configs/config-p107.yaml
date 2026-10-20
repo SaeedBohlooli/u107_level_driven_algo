@@ -120,6 +120,7 @@ xui_position_defaults:
 
     t6_trail_w_ema_21:
       enabled: False
+
   stop_losses:
     sl_max_x_percent:
       enabled: true
