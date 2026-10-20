@@ -89,12 +89,13 @@ async def check_for_stop_loss_and_take_profit(ib, app_config, application_state,
         if current_bid is None or current_ask is None:
             logger.warning(f"[check_for_stop_loss_and_take_profit] @@@  symbol: {symbol}, current_bid or current_ask is None, current_bid: {current_bid}, current_ask: {current_ask}")
             continue
-        mid_price = (current_bid + current_ask) / 2
 
         # TODO handle Future ...
         if not number_utils.is_valid_price(current_bid) or not number_utils.is_valid_price(current_ask):
             logger.warning(f"[check_for_stop_loss_and_take_profit] @@@  symbol: {symbol}, current_bid or current_ask is invalid, current_bid: {current_bid}, current_ask: {current_ask}")
             continue
+
+        mid_price = (current_bid + current_ask) / 2
 
         # update app status ...
         if app_config['symbols_meta'].get(symbol,{}).get('contract_type','Equity') == 'Equity':
@@ -120,14 +121,16 @@ async def check_for_stop_loss_and_take_profit(ib, app_config, application_state,
                     f"underlying_current_price:, {underlying_current_price}, underlying_previous_candle_close: {underlying_previous_candle_close} ,tolerance_amount: {tolerance_amount}")
         logger.info(f"[check_for_stop_loss_and_take_profit] current_bid: {current_bid}, current_ask: {current_ask}")
         stop_loss_condition_evaluated = False
+
+
         # for stop_loss_condition in app_config.get('stop_losses', []):
         for stop_loss_label in app_config['stop_losses']:
 
-            if xui_position_setting.get(stop_loss_label, {}).get('enabled') == True:
+            if xui_position_setting.get("stop_losses",{}).get(stop_loss_label, {}).get('enabled') == True:
                 # xui is enabled explicitly, so we will continue to check it, even if the parent is disabled ...
                 pass
                 # continue
-            elif app_config['stop_losses'][stop_loss_label]['enabled'] == False or xui_position_setting.get(stop_loss_label, {}).get('enabled') == False:
+            elif app_config['stop_losses'][stop_loss_label]['enabled'] == False or xui_position_setting.get("stop_losses",{}).get(stop_loss_label, {}).get('enabled') == False:
                 # parent is false or the position is false, so we will skip it ...
                 logger.info(f"[check_for_stop_loss_and_take_profit] {symbol}, SL is disabled ... {stop_loss_label}")
                 continue
@@ -135,10 +138,18 @@ async def check_for_stop_loss_and_take_profit(ib, app_config, application_state,
             if stop_loss_condition_evaluated:
                 logger.info(f"[check_for_stop_loss_and_take_profit] Already evalauted, so skip, stop_loss_condition_evaluated: {stop_loss_condition_evaluated}")
                 break
+
+            # from config, but can be overridden by xui_position_setting
+            max_loss_percentage = app_config['stop_losses'][stop_loss_label].get('max_loss_percentage', 0)
+            if xui_position_setting.get("stop_losses",{}).get(stop_loss_label, {}).get('max_loss_percentage') is not None:
+                max_loss_percentage = float(xui_position_setting.get("stop_losses",{}).get(stop_loss_label, {}).get('max_loss_percentage'))
+
+            logger.info(f"[check_for_stop_loss_and_take_profit] symbol {symbol}, stop_loss_label: {stop_loss_label}, max_loss_percentage: {max_loss_percentage}, {type(max_loss_percentage)}")
+
             stop_loss_condition = app_config['stop_losses'][stop_loss_label]['condition'].replace('\n', ' ')
             stop_loss_condition_evaluated = eval(stop_loss_condition)
 
-            logger.info(f"[check_for_stop_loss_and_take_profit] symbol {symbol}, stop_loss_condition: {stop_loss_condition}, stop_loss_condition_evaluated: {stop_loss_condition_evaluated}")
+            logger.info(f"[check_for_stop_loss_and_take_profit] symbol {symbol}, {stop_loss_label}, stop_loss_condition_evaluated: {stop_loss_condition_evaluated}, stop_loss_condition: {stop_loss_condition}")
 
             if stop_loss_condition_evaluated:
                 logger.warning(f"[check_for_stop_loss_and_take_profit] {symbol} SL condition met ... {stop_loss_condition}")
@@ -216,41 +227,70 @@ async def check_for_stop_loss_and_take_profit(ib, app_config, application_state,
                 logger.info(f"[check_for_stop_loss_and_take_profit] {symbol}, TP already is executed ... {take_profit_lable}")
                 continue
 
-            if xui_position_setting.get(take_profit_lable,{}).get('enabled') == True:
+            if xui_position_setting.get("take_profits",{}).get(take_profit_lable,{}).get('enabled') == True:
                 # xui is enabled explicitly, so we will continue to check it, even if the parent is disabled ...
+                logger.info(f"[check_for_stop_loss_and_take_profit] {symbol}, TP is enabled in xui_position_setting ... {take_profit_lable}")
                 pass
                 # continue
-            elif app_config['take_profits'][take_profit_lable]['enabled'] == False or xui_position_setting.get(take_profit_lable, {}).get('enabled') == False:
+            elif app_config['take_profits'][take_profit_lable]['enabled'] == False or xui_position_setting.get("take_profits",{}).get(take_profit_lable, {}).get('enabled') == False:
                 # parent is false or the position is false, so we will skip it ...
+                logger.info(f"[check_for_stop_loss_and_take_profit] {symbol}, TP is disabled in take_profits or in the xui_position_setting ... {take_profit_lable}")
                 continue
 
-            if app_config.get('take_profit_configs',{}).get(take_profit_lable ,{}).get('enabled',True) == False:
-                logger.info(f"[check_for_stop_loss_and_take_profit] {symbol}, TP is disabled in take_profit_configs  ... {take_profit_lable}")
-                continue
-
-            close_type = app_config.get('take_profit_configs',{}).get(take_profit_lable ,{}).get('close_type') # percentage or price   # used in config
-            if close_type is None: # if not in the config, we will use the legacy one ...
-                close_type = app_config.get('take_profits',{}).get(take_profit_lable ,{}).get('close_type', "percentage") # percentage or price   # used in config
-            number_of_trails = app_config.get('take_profit_configs',{}).get(take_profit_lable ,{}).get('number_of_trails',0)   # used in config
-            percentage_change = 1.0 + app_config.get('take_profit_configs',{}).get(take_profit_lable ,{}).get('percentage_change',0)   # used in config
-            absolute_change = app_config.get('take_profit_configs',{}).get(take_profit_lable ,{}).get('absolute_change',0)  # used in config
 
             take_profit_condition = app_config['take_profits'][take_profit_lable].get('condition', '1 == 2')
+            close_type = app_config.get('take_profits', {}).get(take_profit_lable, {}).get('close_type', "percentage")  # percentage or price   # used in config
             close_quantity_percentage = app_config['take_profits'][take_profit_lable].get('close_quantity_percentage', 0)
-            close_quantity_numbner = app_config['take_profits'][take_profit_lable].get('close_quantity_numbner', "1*0")
-            take_profit_condition_evaluated = eval(take_profit_condition.replace('\n', ' '))
+            close_quantity_remaining = app_config['take_profits'][take_profit_lable].get('close_quantity_remaining', -1)
+
+            # overriding from xui_position_setting if it is provided ...
+            if xui_position_setting.get("take_profits",{}).get(take_profit_lable, {}).get('close_type') is not None:
+                close_type = xui_position_setting.get("take_profits",{}).get(take_profit_lable, {}).get('close_type')
+            if xui_position_setting.get("take_profits",{}).get(take_profit_lable, {}).get('close_quantity_percentage') is not None:
+                close_quantity_percentage = xui_position_setting.get("take_profits",{}).get(take_profit_lable, {}).get('close_quantity_percentage')
+            if xui_position_setting.get("take_profits",{}).get(take_profit_lable, {}).get('close_quantity_remaining') is not None:
+                close_quantity_remaining = xui_position_setting.get("take_profits",{}).get(take_profit_lable, {}).get('close_quantity_remaining')
+
+            # Variables used in the config
+
+
+            percentage_change = app_config["take_profits"][take_profit_lable].get('percentage_change', 0)
+            absolute_change = app_config["take_profits"][take_profit_lable].get('absolute_change', 0)
+            close_quantity_number = app_config['take_profits'][take_profit_lable].get('close_quantity_number', "1*0") # comes from user ui, saved in
+
+            # overriding from xui_position_setting if it is provided ...
+            if xui_position_setting.get("take_profits",{}).get(take_profit_lable, {}).get('percentage_change') is not None:
+                percentage_change = float(xui_position_setting.get("take_profits",{}).get(take_profit_lable, {}).get('percentage_change'))
+            if xui_position_setting.get("take_profits",{}).get(take_profit_lable, {}).get('absolute_change') is not None:
+                absolute_change = float(xui_position_setting.get("take_profits",{}).get(take_profit_lable, {}).get('absolute_change'))
+
+
+
+            percentage_change = float(percentage_change)
+            absolute_change = float(absolute_change)
+            close_quantity_percentage = float(close_quantity_percentage)
+            close_quantity_remaining = int(close_quantity_remaining)
+
+
             logger.info(f"[check_for_stop_loss_and_take_profit] symbol {symbol}, take_profit_condition: {take_profit_condition}")
+            logger.info(f"[check_for_stop_loss_and_take_profit] symbol {symbol}, percentage_change: {percentage_change}, type: {type(percentage_change)} ")
+            logger.info(f"[check_for_stop_loss_and_take_profit] symbol {symbol}, absolute_change: {absolute_change}, type: {type(absolute_change)}")
+            logger.info(f"[check_for_stop_loss_and_take_profit] symbol {symbol}, close_quantity_percentage: {close_quantity_percentage}, type: {type(close_quantity_percentage)}")
+            logger.info(f"[check_for_stop_loss_and_take_profit] symbol {symbol}, close_quantity_remaining: {close_quantity_remaining}, type: {type(close_quantity_remaining)}")
+
+            take_profit_condition_evaluated = eval(take_profit_condition.replace('\n', ' '))
+            logger.info(f"[check_for_stop_loss_and_take_profit] symbol {symbol}, {take_profit_condition_evaluated}, take_profit_condition: {take_profit_condition}")
 
             if close_type == 'percentage':
-                if close_quantity_percentage == -1: # close all
+                if close_quantity_percentage == 1: # close all
                     close_quantity = available_quantity
                 else:
                     close_quantity = int(start_quantity * close_quantity_percentage )   # we take the less. dont do round
                     close_quantity = 1 if close_quantity == 0 else close_quantity  # we want to make sure 0.4 * 1 will return 1.
             elif close_type == 'absolute':  # this is trail, not absolute
-                close_quantity = available_quantity - number_of_trails
+                close_quantity = available_quantity - close_quantity_remaining
             elif close_type == 'real_absolute':
-                close_quantity = eval(close_quantity_numbner)
+                close_quantity = eval(close_quantity_number)
             else:
                 logger.info(f"[check_for_stop_loss_and_take_profit] @@@ close_type is not supported. close_type: {close_type}")
 

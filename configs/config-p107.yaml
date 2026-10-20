@@ -106,15 +106,24 @@ xui_position_defaults:
   take_profits:
     t1:
       enabled: True
-      enabled_type: bool
+      percentage_change: 0.15
+      absolute_change: 0.20
+      close_type: "percentage"
+      close_quantity_percentage: 0.8
+      close_quantity_remaining: 1
+
+    tp_percentage_configurable:
+      enabled: True
+      percentage_change: 0.50
+      close_type: "percentage"
+      close_quantity_percentage: 0.8
+
     t6_trail_w_ema_21:
       enabled: False
-      enabled_type: bool
   stop_losses:
-    s1:
-      enabled: False
-      enabled_type: bool
-
+    sl_max_x_percent:
+      enabled: true
+      max_loss_percentage: 0.8
 
 child_configs:
   - config-strategy.yaml

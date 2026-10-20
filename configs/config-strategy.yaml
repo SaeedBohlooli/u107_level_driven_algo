@@ -309,45 +309,57 @@ stop_losses:
           and underlying_current_price > underlying_previous_candle_close)
     memo: sl_1
 
-  sl_manual:
+  sl_user_defined:
     enabled: true
     condition: >
       (right == 'C' and user_defined_stop_loss !=0 and underlying_current_price < user_defined_stop_loss)
       or
       (right == 'P' and user_defined_stop_loss !=0 and underlying_current_price > user_defined_stop_loss)
-    memo: sl_manual
+    memo: sl_user_defined
 
 
-  sl_3:
+  sl_max_20_percent:
+    enabled: false
+    condition: >
+      current_bid < entry_price * 0.80
+    memo: sl_max_20_percent
+
+  sl_max_30_percent:
     enabled: false
     condition: >
       current_bid < entry_price * 0.70
-    memo: sl_70_percent
+    memo: sl_max_30_percent
 
+  sl_max_x_percent:
+    enabled: false
+    condition: >
+      current_bid < entry_price * ( 1 - max_loss_percentage)
+    max_loss_percentage: 0.3
+    memo: sl_max_x_percent
 
-stop_losses_delete_later:
-    - right == 'C' and case != 'case_manual' 
-        and underlying_previous_candle_close < level_used_to_open - tolerance_amount 
-        and underlying_current_price < underlying_previous_candle_close
-    - right == 'P' and case != 'case_manual' 
-        and underlying_previous_candle_close > level_used_to_open + tolerance_amount 
-        and underlying_current_price > underlying_previous_candle_close
-    - right == 'C' and user_defined_stop_loss !=0 and underlying_current_price < user_defined_stop_loss
-    - right == 'P' and user_defined_stop_loss !=0 and underlying_current_price > user_defined_stop_loss
-#    - right == 'C' and case in ('case_7', 'case_8')
-#        and underlying_previous_candle_close < level_used_to_open - tolerance_amount
-#    - right == 'P' and case in ('case_7', 'case_8')
-#        and underlying_previous_candle_close > level_used_to_open + tolerance_amount
-#    - current_bid < entry_price * 0.70
 
 take_profits:
   t1:
     enabled: false
     condition: >
-      (current_bid > entry_price * percentage_change or current_bid - entry_price > absolute_change)
+      (current_bid > entry_price * (1 + percentage_change) or current_bid - entry_price > absolute_change)
       and entry_price not in [0,-1] and current_bid not in [0,-1]
+    percentage_change: 0.15
+    absolute_change: 0.20
+    close_type: "percentage"  # absolute or percentage
     close_quantity_percentage: 0.8
-    close_quantity_numbner: total - number_of_trails
+    close_quantity_remaining: 1
+    memo: Taking some profit at 15% or 0.20 with 4 of 6 - percentage_change comes from config
+
+  tp_percentage_configurable:
+    enabled: false
+    condition: >
+      current_bid > entry_price * (1 + percentage_change) 
+      and entry_price not in [0,-1] and current_bid not in [0,-1]
+    percentage_change: 0.15
+    close_type: "percentage"  # absolute or percentage
+    close_quantity_percentage: 0.8
+    close_quantity_remaining: 1
     memo: Taking some profit at 15% or 0.20 with 4 of 6 - percentage_change comes from config
 
   t2:
@@ -356,6 +368,7 @@ take_profits:
       (current_bid > entry_price * 1.30 or current_bid - entry_price > 0.70)
       and entry_price not in [0,-1] and current_bid not in [0,-1]
     close_quantity_percentage: 0.20
+    close_type: "percentage"  # absolute or percentage
     memo: Taking some profit at 30% or 0.80 with 1 of 6
 
   t3:
@@ -363,7 +376,7 @@ take_profits:
     condition: >
       (current_bid > entry_price * 1.60 )
       and entry_price not in [0,-1] and current_bid not in [0,-1]
-    close_quantity_percentage: -1
+    close_quantity_percentage: 1
     memo: Taking all profit at 60%
 
   t4_ev_if_t1:
@@ -374,7 +387,7 @@ take_profits:
       or
       (right == 'P' and is_executed_take_profits(application_state, symbol, take_profit_list=['t1']) 
         and underlying_previous_candle_close > entry_underlying_price)
-    close_quantity_percentage: -1
+    close_quantity_percentage: 1
     memo: This is for break even - if we hit TP1, then we go for break even
 
   t4_ev_if_t2:
@@ -385,7 +398,7 @@ take_profits:
       or
       (right == 'P' and is_executed_take_profits(application_state, symbol, take_profit_list=['t2']) 
         and underlying_previous_candle_close > entry_underlying_price)
-    close_quantity_percentage: -1
+    close_quantity_percentage: 1
     memo: This is for break even - if we hit TP2, then we go for break even
 
   t5_cr_lv:
@@ -402,7 +415,7 @@ take_profits:
   t6_trail_t1:
     enabled: false
     condition: check_mark_revers_candles(application_state, symbol, take_profit_alias='t2', market_data=market_data)
-    close_quantity_percentage: -1
+    close_quantity_percentage: 1
     memo: for long after tp1, if we go below last down close candle, then we close the position and vice versa for short
 
   t6_trail_w_ema_21:
@@ -421,7 +434,7 @@ take_profits:
           and symbol_df['close'].iloc[-3] < symbol_df['ema_21'].iloc[-3]
           and symbol_df['close'].iloc[-1] > symbol_df['ema_21'].iloc[-1]
         )
-    close_quantity_percentage: -1
+    close_quantity_percentage: 1
     memo: for long after tp1, if we go below last down close candle, then we close the position and vice versa for short
 
   # Always keep this enable
@@ -435,7 +448,7 @@ take_profits:
       (right == 'C' and underlying_current_price > user_defined_take_profit and user_defined_take_profit not in [0,-1])
       or
       (right == 'P' and underlying_current_price < user_defined_take_profit and user_defined_take_profit not in [0,-1])
-    close_quantity_numbner: user_defined_take_profit_quantity
+    close_quantity_number: user_defined_take_profit_quantity
     memo:
 
   t10_cl_manual: # This is for closing everything just NVDA:   1 == 1 and symbol == 'NVDA'
@@ -446,7 +459,7 @@ take_profits:
   t11_cl_manual: # This is for closing everything just NVDA:   1 == 1 and symbol == 'NVDA'
     enabled: False
     condition: 1 == 3 and symbol == 'TSLA'
-    close_quantity_percentage: -1
+    close_quantity_percentage: 1
 
 
 closeness_distance: df['atr_14'].iloc[-2]

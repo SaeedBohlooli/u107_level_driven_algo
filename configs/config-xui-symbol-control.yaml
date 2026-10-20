@@ -1,15 +1,13 @@
-#IMPORTANT: Everytime we run engine it should enable take profit for all symbols. User has to explicitly disable it.
+#IMPORTANT: Everytime we run engine it should enable take profit for all symbols. User has to explicitly disable it.
+
+
 xui_symbol_controls:
   trading_enabled: true
   calls_enabled: true
   puts_enabled: true
-  skip_level_closeness_enabled: true # default is false
-  skip_pdhl_and_qqq_check_enabled: true # default is false, if true, we will skip the check that avoid going long above PDH - extra safety- if we are above PDH, low change we continue after 5MH breakout.
+  skip_level_closeness_enabled: true  # default is false
+  skip_pdhl_and_qqq_check_enabled: true # default is false, if true, we will skip the check that avoid going long above PDH - extra safety- if we are above PDH, low change we continue after 5MH breakout.
   symbols:
-    QQQ:
-      call_enabled: true
-      put_enabled: true
-      tp_enabled: true
     AAPL:
       call_enabled: true
       put_enabled: true
@@ -22,11 +20,19 @@ xui_symbol_controls:
       call_enabled: true
       put_enabled: true
       tp_enabled: true
-    NVDA:
+    HOOD:
       call_enabled: true
       put_enabled: true
       tp_enabled: true
-    TSLA:
+    INTC:
+      call_enabled: true
+      put_enabled: true
+      tp_enabled: true
+    MSFT:
+      call_enabled: true
+      put_enabled: true
+      tp_enabled: true
+    NVDA:
       call_enabled: true
       put_enabled: true
       tp_enabled: true
@@ -34,7 +40,19 @@ xui_symbol_controls:
       call_enabled: true
       put_enabled: true
       tp_enabled: true
+    QQQ:
+      call_enabled: true
+      put_enabled: true
+      tp_enabled: true
+    SPCX:
+      call_enabled: true
+      put_enabled: true
+      tp_enabled: true
     SPY:
+      call_enabled: true
+      put_enabled: true
+      tp_enabled: true
+    TSLA:
       call_enabled: true
       put_enabled: true
       tp_enabled: true
