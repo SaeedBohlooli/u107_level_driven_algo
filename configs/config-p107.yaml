@@ -118,7 +118,11 @@ xui_position_defaults:
       close_type: "percentage"
       close_quantity_percentage: 0.8
 
+    tp6_trail_w_ema_9:
+      enabled: False
     tp6_trail_w_ema_21:
+      enabled: False
+    tp6_trail_w_ema_75:
       enabled: False
 
   stop_losses:
