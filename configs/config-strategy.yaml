@@ -339,7 +339,7 @@ stop_losses:
 
 
 take_profits:
-  t1:
+  tp1:
     enabled: false
     condition: >
       (current_bid > entry_price * (1 + percentage_change) or current_bid - entry_price > absolute_change)
@@ -351,7 +351,7 @@ take_profits:
     close_quantity_remaining: 1
     memo: Taking some profit at 15% or 0.20 with 4 of 6 - percentage_change comes from config
 
-  tp_percentage_configurable:
+  tp1_percentage_configurable:
     enabled: false
     condition: >
       current_bid > entry_price * (1 + percentage_change) 
@@ -362,7 +362,7 @@ take_profits:
     close_quantity_remaining: 1
     memo: Taking some profit at 15% or 0.20 with 4 of 6 - percentage_change comes from config
 
-  t2:
+  tp2:
     enabled: false
     condition: >
       (current_bid > entry_price * 1.30 or current_bid - entry_price > 0.70)
@@ -371,7 +371,7 @@ take_profits:
     close_type: "percentage"  # absolute or percentage
     memo: Taking some profit at 30% or 0.80 with 1 of 6
 
-  t3:
+  tp3:
     enabled: false
     condition: >
       (current_bid > entry_price * 1.60 )
@@ -379,29 +379,29 @@ take_profits:
     close_quantity_percentage: 1
     memo: Taking all profit at 60%
 
-  t4_ev_if_t1:
+  tp4_ev_if_tp1:
     enabled: false
     condition: >
-      (right == 'C' and is_executed_take_profits(application_state, symbol, take_profit_list=['t1']) 
+      (right == 'C' and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
         and underlying_previous_candle_close < entry_underlying_price)
       or
-      (right == 'P' and is_executed_take_profits(application_state, symbol, take_profit_list=['t1']) 
+      (right == 'P' and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
         and underlying_previous_candle_close > entry_underlying_price)
     close_quantity_percentage: 1
     memo: This is for break even - if we hit TP1, then we go for break even
 
-  t4_ev_if_t2:
+  tp4_ev_if_tp2:
     enabled: false
     condition: >
-      (right == 'C' and is_executed_take_profits(application_state, symbol, take_profit_list=['t2']) 
+      (right == 'C' and is_executed_take_profits(application_state, symbol, take_profit_list=['tp2']) 
         and underlying_previous_candle_close < entry_underlying_price)
       or
-      (right == 'P' and is_executed_take_profits(application_state, symbol, take_profit_list=['t2']) 
+      (right == 'P' and is_executed_take_profits(application_state, symbol, take_profit_list=['tp2']) 
         and underlying_previous_candle_close > entry_underlying_price)
     close_quantity_percentage: 1
     memo: This is for break even - if we hit TP2, then we go for break even
 
-  t5_cr_lv:
+  tp5_cr_lv:
     enabled: false
     condition: >
       (right == 'C' and is_price_crossed_levels(application_state, side='up', symbol=symbol, next_levels=['PDH'], 
@@ -412,24 +412,24 @@ take_profits:
     close_quantity_percentage: 0.5
     memo: if we entered below major level and crossing level, we dump some ...
 
-  t6_trail_t1:
+  tp6_trail_tp1:
     enabled: false
-    condition: check_mark_revers_candles(application_state, symbol, take_profit_alias='t2', market_data=market_data)
+    condition: check_mark_revers_candles(application_state, symbol, take_profit_alias='tp2', market_data=market_data)
     close_quantity_percentage: 1
     memo: for long after tp1, if we go below last down close candle, then we close the position and vice versa for short
 
-  t6_trail_w_ema_21:
+  tp6_trail_w_ema_21:
     enabled: false
     condition: >
         ( right == 'C' 
-          and is_executed_take_profits(application_state, symbol, take_profit_list=['t1']) 
+          and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
           and symbol_df['close'].iloc[-2] > symbol_df['ema_21'].iloc[-2] 
           and symbol_df['close'].iloc[-3] > symbol_df['ema_21'].iloc[-3]
           and symbol_df['close'].iloc[-1] < symbol_df['ema_21'].iloc[-1]
         )
         or
         ( right == 'P' 
-          and is_executed_take_profits(application_state, symbol, take_profit_list=['t1']) 
+          and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
           and symbol_df['close'].iloc[-2] < symbol_df['ema_21'].iloc[-2] 
           and symbol_df['close'].iloc[-3] < symbol_df['ema_21'].iloc[-3]
           and symbol_df['close'].iloc[-1] > symbol_df['ema_21'].iloc[-1]
@@ -439,7 +439,7 @@ take_profits:
 
   # Always keep this enable
   # This is for user defined take profit, if user set the take profit, then we will close the position based on that
-  t7_user_defined_take_profit:
+  tp7_user_defined_take_profit:
     enabled: true
     always_run: true
     multiple_run: true
@@ -451,7 +451,7 @@ take_profits:
     close_quantity_number: user_defined_take_profit_quantity
     memo:
 
-#  t10_cl_manual: # This is for closing everything just NVDA:   1 == 1 and symbol == 'NVDA'
+#  tp10_cl_manual: # This is for closing everything just NVDA:   1 == 1 and symbol == 'NVDA'
 #    enabled: False
 #    condition: 1 == 2 and symbol == 'AMZN'
 #    close_quantity_percentage: .5

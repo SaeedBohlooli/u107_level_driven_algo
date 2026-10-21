@@ -104,7 +104,7 @@ alarms:
 
 xui_position_defaults:
   take_profits:
-    t1:
+    tp1:
       enabled: True
       percentage_change: 0.15
       absolute_change: 0.20
@@ -112,7 +112,7 @@ xui_position_defaults:
       close_quantity_percentage: 0.8
       close_quantity_remaining: 1
 
-    tp_percentage_configurable:
+    tp1_percentage_configurable:
       enabled: True
       percentage_change: 0.50
       close_type: "percentage"
