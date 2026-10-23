@@ -117,7 +117,7 @@ cases:
         - is_second_candle_after(min_seconds=15)
         - 9 == 9
         - has_strong_close(df, side='up') or df['close'].iloc[-1] > df['high'].iloc[-2]
-        - is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='up', threshold=5)
+        - 1 == 1 or is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='up', threshold=5)
 
 
     short:
@@ -135,7 +135,7 @@ cases:
         - is_second_candle_after(min_seconds=15)
         - 9 == 9
         - has_strong_close(df, side='down') or df['close'].iloc[-1] < df['low'].iloc[-2]
-        - is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='down', threshold=5)
+        - 1 == 1 or is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='down', threshold=5)
 
   case_8:
     memo: based on the R2
@@ -157,7 +157,7 @@ cases:
         - is_second_candle_after(min_seconds=15)
         - 9 == 9
         - has_strong_close(df, side='up') or df['close'].iloc[-1] > df['high'].iloc[-2]
-        - is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='up', threshold=5)
+        - 1 == 1 or is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='up', threshold=5)
 
     short:
       level: levels['PDL']
@@ -174,7 +174,7 @@ cases:
         - is_second_candle_after(min_seconds=15)
         - 9 == 9
         - has_strong_close(df, side='down') or df['close'].iloc[-1] < df['low'].iloc[-2]
-        - is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='down', threshold=5)
+        - 1 == 1 or is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='down', threshold=5)
 
   case_9:
     memo: 5MH and 5ML and rs
@@ -423,16 +423,16 @@ take_profits:
     condition: >
         ( right == 'C' 
           and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
-          and symbol_df['close'].iloc[-2] > symbol_df['ema_9'].iloc[-2] 
+          and symbol_df['close'].iloc[-4] > symbol_df['ema_9'].iloc[-4] 
           and symbol_df['close'].iloc[-3] > symbol_df['ema_9'].iloc[-3]
-          and symbol_df['close'].iloc[-1] < symbol_df['ema_9'].iloc[-2]
+          and symbol_df['close'].iloc[-2] < symbol_df['ema_9'].iloc[-2]
         )
         or
         ( right == 'P' 
           and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
-          and symbol_df['close'].iloc[-2] < symbol_df['ema_9'].iloc[-2] 
-          and symbol_df['close'].iloc[-3] < symbol_df['ema_9'].iloc[-3]
-          and symbol_df['close'].iloc[-1] > symbol_df['ema_9'].iloc[-2]
+          and symbol_df['close'].iloc[-4] < symbol_df['ema_9'].iloc[-4]
+          and symbol_df['close'].iloc[-3] < symbol_df['ema_9'].iloc[-3] 
+          and symbol_df['close'].iloc[-2] < symbol_df['ema_9'].iloc[-2]
         )
     close_quantity_percentage: 1
     memo: for long after tp1, if we go below last down close candle, then we close the position and vice versa for short
@@ -443,15 +443,15 @@ take_profits:
     condition: >
         ( right == 'C' 
           and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
-          and symbol_df['close'].iloc[-2] > symbol_df['ema_21'].iloc[-2] 
           and symbol_df['close'].iloc[-3] > symbol_df['ema_21'].iloc[-3]
+          and symbol_df['close'].iloc[-2] > symbol_df['ema_21'].iloc[-2] 
           and symbol_df['close'].iloc[-1] < symbol_df['ema_21'].iloc[-2]
         )
         or
         ( right == 'P' 
           and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
-          and symbol_df['close'].iloc[-2] < symbol_df['ema_21'].iloc[-2] 
           and symbol_df['close'].iloc[-3] < symbol_df['ema_21'].iloc[-3]
+          and symbol_df['close'].iloc[-2] < symbol_df['ema_21'].iloc[-2] 
           and symbol_df['close'].iloc[-1] > symbol_df['ema_21'].iloc[-2]
         )
     close_quantity_percentage: 1
@@ -462,15 +462,15 @@ take_profits:
     condition: >
         ( right == 'C' 
           and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
-          and symbol_df['close'].iloc[-2] > symbol_df['ema_75'].iloc[-2] 
           and symbol_df['close'].iloc[-3] > symbol_df['ema_75'].iloc[-3]
+          and symbol_df['close'].iloc[-2] > symbol_df['ema_75'].iloc[-2] 
           and symbol_df['close'].iloc[-1] < symbol_df['ema_75'].iloc[-2]
         )
         or
         ( right == 'P' 
           and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
-          and symbol_df['close'].iloc[-2] < symbol_df['ema_75'].iloc[-2] 
           and symbol_df['close'].iloc[-3] < symbol_df['ema_75'].iloc[-3]
+          and symbol_df['close'].iloc[-2] < symbol_df['ema_75'].iloc[-2] 
           and symbol_df['close'].iloc[-1] > symbol_df['ema_75'].iloc[-2]
         )
     close_quantity_percentage: 1

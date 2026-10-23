@@ -13,8 +13,8 @@ trading_session:
 live_cases:
   - case_7
   - case_8
-  - case_9
-  - case_10
+#  - case_9
+#  - case_10
 order_cases:
   - case_7
   - case_8
@@ -29,6 +29,8 @@ available_cases:
   - three:
       case: case_3
       memo: 5MH and 5ML breakout_ver_2, no short above PDH, trade close to level. - we running this one - 2.1 improved
+
+# can be removed ...
 take_profit_configs:
   t1:
     enabled: true

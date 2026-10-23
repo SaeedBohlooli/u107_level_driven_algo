@@ -741,16 +741,20 @@ def add_hover_to_chart(fig1, hover_df):
     return fig1
 
 
-def cut_df_for_live(df):
+def cut_df_for_live(df, start_time=None, end_time=None):
     if len(df) ==0:
         return df
-    # return df
 
-    logger.info(f"[cut_df_for_live] cutting df for mode: {mode}, original len: {len(df)} \n{df[:10].to_markdown()} \n{df[-5:].to_markdown()}")
+    logger.info(f"[cut_df_for_live] cutting df for mode: {mode}, original len: {len(df)}, start_time: {start_time}, end_time: {end_time} \n{df[:10].to_markdown()} \n{df[-5:].to_markdown()}")
     if mode == 'live':
         logger.info(f"[cut_df_for_live] mode: {mode}, {app_config['chart']['live']['start_time']}, {app_config['chart']['live']['end_time']}, cutting for live mode ...")
-        df = df_utils.cut_df_strating_hour_x_on_last_day(df, cutoff_time=app_config['chart']['live']['start_time'] )
-        df = df_utils.cut_df_until_hour_x_on_last_day(df, cutoff_time=app_config['chart']['live']['end_time'] )
+        
+        # Use custom times if provided, otherwise use config defaults
+        start = start_time if start_time else app_config['chart']['live']['start_time']
+        end = end_time if end_time else app_config['chart']['live']['end_time']
+        
+        df = df_utils.cut_df_strating_hour_x_on_last_day(df, cutoff_time=start)
+        df = df_utils.cut_df_until_hour_x_on_last_day(df, cutoff_time=end)
         logger.info(f"[cut_df_for_live] after cutting for live mode, len: {len(df)}")
     else:
         logger.info(f"[cut_df_for_live] mode: {mode}, no cutting applied.")
@@ -772,7 +776,7 @@ def create_chart_hovered_df(hover_df, symbol):
     df_1['price'] = df_1['price_1']
     df_1['text'] = df_1['memo']
     df_1['date'] = pd.to_datetime(df_1['date'])
-    df_1 = cut_df_for_live(df_1)
+    # Don't cut - keep all hover data across full time range
 
     logger.info(f"[create_chart_hovered_df], after filter df_1:\n{df_1[-5:].to_markdown()}")
 
@@ -1084,12 +1088,15 @@ def index():
     available_dates = live_dates + available_backtest_dates
 
     chart_date = request.args.get('chart_date') # read from URL
-    logger.info(f"available_dates {available_dates}")
+    time_range = request.args.get('time_range', '09:00-13:00')  # default to first preset
+    start_time_custom = request.args.get('start_time')
+    end_time_custom = request.args.get('end_time')
+    
+    logger.info(f"available_dates {available_dates}, time_range: {time_range}, start: {start_time_custom}, end: {end_time_custom}")
     i = 0
     while chart_date is None or len (chart_date) != 10:
         chart_date = available_dates[i]
         i += 1
-
 
     logger.info(f"chart_date: {chart_date}")
     if len (chart_date) == 10:  # backtest date format 'YYYYMMDD' or 'YYYY-MM-DD'
@@ -1103,6 +1110,16 @@ def index():
     drawing_objects_df = load_file_to_drawing_objects_df()
     hover_df = load_file_to_hover_df()
     close_levels_df = load_file_to_close_levels_df()
+    
+    # Parse time range
+    if time_range == 'custom':
+        selected_start = start_time_custom
+        selected_end = end_time_custom
+    else:
+        time_parts = time_range.split('-')
+        selected_start = time_parts[0]
+        selected_end = time_parts[1]
+    
     plots = []
     plots_with_symbols = []  # Store both symbol and plot
     logger.info(f"================== call from client run_counter: {run_counter}")
@@ -1115,18 +1132,20 @@ def index():
         if len(df) == 0:
             continue
 
-        df = cut_df_for_live(df)
+        df = cut_df_for_live(df, start_time=selected_start, end_time=selected_end)
 
+        # Load extra features but DON'T cut - keep full range for annotations
         extra_features_df = load_extra_features_df(portfolio_id='p107', time_frame=time_frame, symbol=symbol)
-        extra_features_df = cut_df_for_live(extra_features_df)
 
         fig1 = draw_w_plotly_w_subplot_1(symbol, chart_title=f'{symbol}-{time_frame}')
         fig1 = draw_objects(fig1,df, drawing_objects_df, symbol=symbol, time_frame=time_frame )
         if mode == 'back_test':
             fig1 = add_start_finish_day(fig1, df)
             fig1 = mark_market_time_only_last_one(fig1, df)
+        # Don't cut hover_df - keep full range for annotations
         chart_hovered_df = create_chart_hovered_df(hover_df, symbol)
         fig1 = add_hover_to_chart(fig1, chart_hovered_df)
+        # Don't cut close_levels_df - keep full range for annotations
         fig1 = add_close_levels_anoteation(fig1, df, close_levels_df, symbol)
         fig1 = add_cases_info_label(fig1, app_config)
         plot_html = pio.to_html(fig1, full_html=False)
@@ -1134,8 +1153,8 @@ def index():
         plots.append(plot_html)
         plots_with_symbols.append((symbol, plot_html))  # Store with symbol
 
-    end_time = time.time()
-    run_spend_time = round(end_time - start_time, 2)
+    end_time_calc = time.time()
+    run_spend_time = round(end_time_calc - start_time, 2)
     logger.warning(f'run_spend_time: {run_spend_time} seconds')
 
     logger.info(f"Done! {run_counter}")
@@ -1147,7 +1166,10 @@ def index():
             symbols=app_config['symbols'],  # ✅ pass symbols for navigation
             backtest_date=chart_date,
             available_dates=available_dates,
-            user_name=user_name
+            user_name=user_name,
+            time_range=time_range,
+            start_time=start_time_custom or selected_start,
+            end_time=end_time_custom or selected_end
         )
     else:
         return render_template(
@@ -1157,7 +1179,10 @@ def index():
             symbols=app_config['symbols'],  # ✅ pass symbols for navigation
             backtest_date='',
             available_dates=[],
-            user_name=user_name)  # ✅ must pass this
+            user_name=user_name,
+            time_range=time_range,
+            start_time=start_time_custom or selected_start,
+            end_time=end_time_custom or selected_end)
 
 
 if __name__ == '__main__':

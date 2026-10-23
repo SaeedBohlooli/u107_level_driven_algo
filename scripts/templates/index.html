@@ -2,18 +2,73 @@
 <html>
 <head>
     <title>p107 chart</title>
+    <style>
+        .controls-container {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        select, input {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body style="background-color: #fafafa; font-family: Arial, sans-serif;">
-    <!-- 🟢 Form sends backtest_date via GET -->
-    <form method="get" action="/">
-        <label for="chart_date"> {{user_name}} - Date:</label>
-        <select name="chart_date" id="chart_date" onchange="this.form.submit()">
-            {% for date in available_dates %}
-                <option value="{{ date }}" {% if chart_date == date %}selected{% endif %}>
-                    {{date}}
-                </option>
-            {% endfor %}
-        </select>
+    <!-- Controls Form -->
+    <form method="get" action="/" class="controls-container">
+        <div class="control-group">
+            <label for="chart_date">{{user_name}} - Date:</label>
+            <select name="chart_date" id="chart_date" onchange="this.form.submit()">
+                {% for date in available_dates %}
+                    <option value="{{ date }}" {% if chart_date == date %}selected{% endif %}>
+                        {{date}}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label for="time_range">Time Range:</label>
+            <select name="time_range" id="time_range" onchange="this.form.submit()">
+                <option value="custom" {% if time_range == 'custom' %}selected{% endif %}>Custom (From/To)</option>
+                <option value="09:00-13:00" {% if time_range == '09:00-13:00' %}selected{% endif %}>09:00 - 13:00</option>
+                <option value="12:00-16:00" {% if time_range == '12:00-16:00' %}selected{% endif %}>12:00 - 16:00</option>
+            </select>
+        </div>
+
+        {% if time_range == 'custom' %}
+        <div class="control-group">
+            <label for="start_time">From:</label>
+            <input type="time" name="start_time" id="start_time" value="{{ start_time }}" onchange="this.form.submit()">
+        </div>
+
+        <div class="control-group">
+            <label for="end_time">To:</label>
+            <input type="time" name="end_time" id="end_time" value="{{ end_time }}" onchange="this.form.submit()">
+        </div>
+        {% endif %}
     </form>
 
 
