@@ -21,8 +21,8 @@ async def get_historical_data(ib, symbol, app_config, application_state, time_fr
     )
 
     if not application_state['is_save_time']:
-        logger.info(f"[get_historical_data] , start: \n{df[:2].to_markdown()}")
-        logger.info(f"[get_historical_data] end: \n{df[-2:].to_markdown()}")
+        logger.info(f"[get_historical_data] {symbol} start: \n{df[:2].to_markdown()}")
+        logger.info(f"[get_historical_data] {symbol} end: \n{df[-2:].to_markdown()}")
     return df
 
 
