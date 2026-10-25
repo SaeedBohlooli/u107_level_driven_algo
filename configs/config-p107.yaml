@@ -27,6 +27,7 @@ dirs:
   results: "../../portfolios/{portfolio_id}/results"
   heartbeat: "../../portfolios/{portfolio_id}/heartbeat"
   ib: "../../portfolios/{portfolio_id}/ib"
+  ib_archive: "../../portfolios/{portfolio_id}/ib-archive"
   reports: "../../portfolios/{portfolio_id}/reports"
   log_dir: "../../portfolios/{portfolio_id}/logs/{date}"
   intermediate: "../../portfolios/{portfolio_id}/intermediate"
