@@ -20,7 +20,7 @@ async def check_for_stop_loss_and_take_profit(ib, app_config, application_state,
     symbols_need_to_be_removed = [] # we dont remove in the loop ..
 
     for symbol, open_trade_info in application_state.get('open_trades_dic', {}).items():
-        logger.info(f"[check_for_stop_loss_and_take_profit] symbol {symbol}, open order unique_run_number: {open_trade_info.get('unique_run_number')}" )
+        logger.info(f"[check_for_stop_loss_and_take_profit] {symbol}, open order unique_run_number: {open_trade_info.get('unique_run_number')}" )
 
         # ###
         # stop loss
@@ -144,12 +144,12 @@ async def check_for_stop_loss_and_take_profit(ib, app_config, application_state,
             if xui_position_setting.get("stop_losses",{}).get(stop_loss_label, {}).get('max_loss_percentage') is not None:
                 max_loss_percentage = float(xui_position_setting.get("stop_losses",{}).get(stop_loss_label, {}).get('max_loss_percentage'))
 
-            logger.info(f"[check_for_stop_loss_and_take_profit] symbol {symbol}, stop_loss_label: {stop_loss_label}, max_loss_percentage: {max_loss_percentage}, {type(max_loss_percentage)}")
+            logger.info(f"[check_for_stop_loss_and_take_profit] {symbol}, stop_loss_label: {stop_loss_label}, max_loss_percentage: {max_loss_percentage}, {type(max_loss_percentage)}")
 
             stop_loss_condition = app_config['stop_losses'][stop_loss_label]['condition'].replace('\n', ' ')
             stop_loss_condition_evaluated = eval(stop_loss_condition)
 
-            logger.info(f"[check_for_stop_loss_and_take_profit] symbol {symbol}, {stop_loss_label}, stop_loss_condition_evaluated: {stop_loss_condition_evaluated}, stop_loss_condition: {stop_loss_condition}")
+            logger.info(f"[check_for_stop_loss_and_take_profit] {symbol}, {stop_loss_label}, stop_loss_condition_evaluated: {stop_loss_condition_evaluated}, stop_loss_condition: {stop_loss_condition}")
 
             if stop_loss_condition_evaluated:
                 logger.warning(f"[check_for_stop_loss_and_take_profit] {symbol} SL condition met ... {stop_loss_condition}")
@@ -213,7 +213,7 @@ async def check_for_stop_loss_and_take_profit(ib, app_config, application_state,
         order_closed_by_tp = False
 
         for take_profit_lable in app_config['take_profits']:
-            logger.info(f"[check_for_stop_loss_and_take_profit] symbol {symbol}, take_profit_lable: {take_profit_lable}")
+            logger.info(f"[check_for_stop_loss_and_take_profit] {symbol}, take_profit_lable: {take_profit_lable}")
 
             if tp_is_enabled == False and not app_config.get('take_profits',{}).get(take_profit_lable ,{}).get('always_run',False):
                 logger.info(f"[check_for_stop_loss_and_take_profit] tp_is_enabled is False. so no check ...symbol: {symbol}")
@@ -271,15 +271,14 @@ async def check_for_stop_loss_and_take_profit(ib, app_config, application_state,
             close_quantity_percentage = float(close_quantity_percentage)
             close_quantity_remaining = int(close_quantity_remaining)
 
-
-            logger.info(f"[check_for_stop_loss_and_take_profit] symbol {symbol}, take_profit_condition: {take_profit_condition}")
-            logger.info(f"[check_for_stop_loss_and_take_profit] symbol {symbol}, percentage_change: {percentage_change}, type: {type(percentage_change)} ")
-            logger.info(f"[check_for_stop_loss_and_take_profit] symbol {symbol}, absolute_change: {absolute_change}, type: {type(absolute_change)}")
-            logger.info(f"[check_for_stop_loss_and_take_profit] symbol {symbol}, close_quantity_percentage: {close_quantity_percentage}, type: {type(close_quantity_percentage)}")
-            logger.info(f"[check_for_stop_loss_and_take_profit] symbol {symbol}, close_quantity_remaining: {close_quantity_remaining}, type: {type(close_quantity_remaining)}")
-
-            take_profit_condition_evaluated = eval(take_profit_condition.replace('\n', ' '))
-            logger.info(f"[check_for_stop_loss_and_take_profit] symbol {symbol}, {take_profit_condition_evaluated}, take_profit_condition: {take_profit_condition}")
+            take_profit_condition = take_profit_condition.replace('\n', ' ')
+            logger.info(f"[check_for_stop_loss_and_take_profit] {symbol}, take_profit_condition: {take_profit_condition}")
+            logger.info(f"[check_for_stop_loss_and_take_profit] {symbol}, percentage_change: {percentage_change}, type: {type(percentage_change)} ")
+            logger.info(f"[check_for_stop_loss_and_take_profit] {symbol}, absolute_change: {absolute_change}, type: {type(absolute_change)}")
+            logger.info(f"[check_for_stop_loss_and_take_profit] {symbol}, close_quantity_percentage: {close_quantity_percentage}, type: {type(close_quantity_percentage)}")
+            logger.info(f"[check_for_stop_loss_and_take_profit] {symbol}, close_quantity_remaining: {close_quantity_remaining}, type: {type(close_quantity_remaining)}")
+            take_profit_condition_evaluated = eval(take_profit_condition)
+            logger.info(f"[check_for_stop_loss_and_take_profit] {symbol}, {take_profit_condition_evaluated}, take_profit_condition: {take_profit_condition} [end]")
 
             if close_type == 'percentage':
                 if close_quantity_percentage == 1: # close all
