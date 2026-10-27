@@ -121,8 +121,11 @@ async def check_buy_sell_result_to_send_order(ib, app_config, application_state,
 
         # context_filter(application_state, details_map, df, application_state['unique_run_number'], symbol, right, level_used)
 
-        if do_check and not app_config['symbols_meta'].get(symbol,{})['can_trade']:
+        if do_check and not app_config['symbols_meta'].get(symbol,{}).get('can_trade', False):
             logger.info(f"[check_buy_sell_result_to_send_order] @@ We are not trading {symbol}.")
+            continue
+        if do_check and  symbol in app_config['symbols_can_not_trade']:
+            logger.info(f"[check_buy_sell_result_to_send_order] @@ We are not trading {symbol}. it is in symbols_can_not_trade list in config")
             continue
         if do_check and not is_trade_time:
             logger.warning(f"[check_buy_sell_result_to_send_order] @@ is_trade_time:{is_trade_time}, {symbol}, {app_config['trading_session']['trade_time']}")

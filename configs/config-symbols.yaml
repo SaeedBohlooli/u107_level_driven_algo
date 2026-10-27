@@ -114,6 +114,10 @@ symbols:
 #  - MU
 
 
+symbols_can_not_trade:
+    - QQQ
+    - SPY
+
 strike_increments:  # default is 2.5., don't put it here if it i 2.5
   QQQ: 1
   SPY: 1

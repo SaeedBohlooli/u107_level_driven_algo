@@ -302,11 +302,13 @@ stop_losses:
     condition: >
       (right == 'C' and case != 'case_manual' 
           and underlying_previous_candle_close < level_used_to_open - tolerance_amount 
-          and underlying_current_price < underlying_previous_candle_close)
+          and underlying_current_price < underlying_previous_candle_close 
+          and underlying_current_price < symbol_df['low'].iloc[-2])
       or
       (right == 'P' and case != 'case_manual' 
           and underlying_previous_candle_close > level_used_to_open + tolerance_amount 
-          and underlying_current_price > underlying_previous_candle_close)
+          and underlying_current_price > underlying_previous_candle_close
+          and underlying_current_price > symbol_df['high'].iloc[-2])
     memo: sl_1
 
   sl_user_defined:
@@ -422,6 +424,7 @@ take_profits:
     enabled: false
     condition: >
         ( right == 'C' 
+          and current_bid > entry_price
           and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
           and symbol_df['close'].iloc[-4] > symbol_df['ema_9'].iloc[-4] 
           and symbol_df['close'].iloc[-3] > symbol_df['ema_9'].iloc[-3]
@@ -429,6 +432,7 @@ take_profits:
         )
         or
         ( right == 'P' 
+          and current_bid > entry_price
           and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
           and symbol_df['close'].iloc[-4] < symbol_df['ema_9'].iloc[-4]
           and symbol_df['close'].iloc[-3] < symbol_df['ema_9'].iloc[-3] 
@@ -442,6 +446,7 @@ take_profits:
     enabled: false
     condition: >
         ( right == 'C' 
+          and current_bid > entry_price
           and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
           and symbol_df['close'].iloc[-3] > symbol_df['ema_21'].iloc[-3]
           and symbol_df['close'].iloc[-2] > symbol_df['ema_21'].iloc[-2] 
@@ -449,6 +454,7 @@ take_profits:
         )
         or
         ( right == 'P' 
+          and current_bid > entry_price
           and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
           and symbol_df['close'].iloc[-3] < symbol_df['ema_21'].iloc[-3]
           and symbol_df['close'].iloc[-2] < symbol_df['ema_21'].iloc[-2] 
@@ -461,6 +467,7 @@ take_profits:
     enabled: false
     condition: >
         ( right == 'C' 
+          and current_bid > entry_price
           and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
           and symbol_df['close'].iloc[-3] > symbol_df['ema_75'].iloc[-3]
           and symbol_df['close'].iloc[-2] > symbol_df['ema_75'].iloc[-2] 
@@ -468,6 +475,7 @@ take_profits:
         )
         or
         ( right == 'P' 
+          and current_bid > entry_price
           and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
           and symbol_df['close'].iloc[-3] < symbol_df['ema_75'].iloc[-3]
           and symbol_df['close'].iloc[-2] < symbol_df['ema_75'].iloc[-2] 

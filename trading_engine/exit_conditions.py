@@ -162,7 +162,9 @@ async def check_for_stop_loss_and_take_profit(ib, app_config, application_state,
                     continue
 
                 entry_execution_price = open_trade_info['entry_execution_price']
+                close_quantity = available_quantity
                 stop_loss_estimated_pnl = (mid_price - entry_execution_price) * close_quantity * 100 if entry_execution_price != 0 else 0
+                stop_loss_estimated_pnl = round(stop_loss_estimated_pnl, 2)
 
                 data = {
                     'symbol': symbol,
