@@ -160,17 +160,24 @@ async def check_for_stop_loss_and_take_profit(ib, app_config, application_state,
                 if not close_result:
                     logger.warning(f"[check_for_stop_loss_and_take_profit] @@@@ we couldn't close the position for SL, so we skip the rest {symbol}  {open_trade_info.get('order_ref')}  needs more investigation ")
                     continue
+
+                entry_execution_price = open_trade_info['entry_execution_price']
+                stop_loss_estimated_pnl = (mid_price - entry_execution_price) * close_quantity * 100 if entry_execution_price != 0 else 0
+
                 data = {
                     'symbol': symbol,
                     'right': open_trade_info['right'],
                     'strike':  open_trade_info['strike'],
                     'expiry': open_trade_info['expiry'],
+                    'entry_execution_price': entry_execution_price,
                     'current_bid': current_bid,
                     'current_ask': current_ask,
                     'underlying_current_price': underlying_current_price,
                     'available_quantity_b4': available_quantity,
-                    'sl_u_run_number': application_state.get('unique_run_number'),
+                    'stop_loss_case': stop_loss_label,
                     'stop_loss_condition': stop_loss_condition,
+                    'stop_loss_estimated_pnl': stop_loss_estimated_pnl,
+                    'sl_u_run_number': application_state.get('unique_run_number'),
                     'candle_date': str(symbol_df['date'].iloc[-1]),
                     'open_u_run_number': '',
                     'open_order_ref': '',
@@ -398,6 +405,12 @@ async def check_for_stop_loss_and_take_profit(ib, app_config, application_state,
 
     for symbol, open_trade_info in application_state.get('open_trades_dic', {}).items():
         if application_state['open_trades_dic'].get(symbol, {}) != {} and open_trade_info.get('available_quantity', 0) <= 0:
+
+            if open_trade_info.get('current_estimated_unrealized_pnl') is not None:
+                open_trade_info['current_estimated_unrealized_pnl'] = 0
+            if open_trade_info.get('current_estimated_realized_pnl') is not None:
+                open_trade_info['current_estimated_realized_pnl'] = calculate_estimated_realized_pnl(open_trade_info)
+
             logger.info(f"{symbol}, the available_quantity is zero, so we set empty dic for it")
             symbols_need_to_be_removed.append(symbol)
 
@@ -564,6 +577,8 @@ def calculate_estimated_realized_pnl(open_trade_info):
     for tp in open_trade_info.get('take_profit_history', []):
         estimated_realized_pnl += tp.get('take_profit_estimated_pnl',0)
 
+    for tp in open_trade_info.get('stop_loss_history', []):
+        estimated_realized_pnl += tp.get('stop_loss_estimated_pnl',0)
     return round(estimated_realized_pnl,3)
 
 def is_executed_take_profits(application_state, symbol, take_profit_list=[]): # used in config
