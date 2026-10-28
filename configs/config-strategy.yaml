@@ -436,7 +436,7 @@ take_profits:
           and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
           and symbol_df['close'].iloc[-4] < symbol_df['ema_9'].iloc[-4]
           and symbol_df['close'].iloc[-3] < symbol_df['ema_9'].iloc[-3] 
-          and symbol_df['close'].iloc[-2] < symbol_df['ema_9'].iloc[-2]
+          and symbol_df['close'].iloc[-2] > symbol_df['ema_9'].iloc[-2]
         )
     close_quantity_percentage: 1
     memo: for long after tp1, if we go below last down close candle, then we close the position and vice versa for short
