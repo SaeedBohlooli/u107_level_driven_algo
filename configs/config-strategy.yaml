@@ -346,12 +346,12 @@ take_profits:
     condition: >
       (current_bid > entry_price * (1 + percentage_change) or current_bid - entry_price > absolute_change)
       and entry_price not in [0,-1] and current_bid not in [0,-1]
-    percentage_change: 0.15
-    absolute_change: 0.20
+    percentage_change: 0.12
+    absolute_change: 0.15
     close_type: "percentage"  # absolute or percentage
     close_quantity_percentage: 0.8
     close_quantity_remaining: 1
-    memo: Taking some profit at 15% or 0.20 with 4 of 6 - percentage_change comes from config
+    memo: Taking some profit at 15% or 0.15 with 4 of 6 - percentage_change comes from config
 
   tp1_percentage_configurable:
     enabled: false
