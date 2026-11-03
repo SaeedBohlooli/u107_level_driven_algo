@@ -341,13 +341,37 @@ stop_losses:
 
 
 take_profits:
-  tp1:
+#  tp1:
+#    enabled: false
+#    condition: >
+#      (current_bid > entry_price * (1 + percentage_change) or current_bid - entry_price > absolute_change)
+#      and entry_price not in [0,-1] and current_bid not in [0,-1]
+#    percentage_change: 0.12
+#    absolute_change: 0.15
+#    close_type: "percentage"  # absolute or percentage
+#    close_quantity_percentage: 0.8
+#    close_quantity_remaining: 1
+#    memo: Taking some profit at 15% or 0.15 with 4 of 6 - percentage_change comes from config
+
+  tp1_absolute:
     enabled: false
     condition: >
-      (current_bid > entry_price * (1 + percentage_change) or current_bid - entry_price > absolute_change)
+      (current_bid - entry_price > absolute_change)
       and entry_price not in [0,-1] and current_bid not in [0,-1]
-    percentage_change: 0.12
+      and not is_executed_take_profits(application_state, symbol, take_profit_list=['tp1'])
     absolute_change: 0.15
+    close_type: "percentage"  # absolute or percentage
+    close_quantity_percentage: 0.8
+    close_quantity_remaining: 1
+    memo: Taking some profit at 15% or 0.15 with 4 of 6 - percentage_change comes from config
+
+  tp1_percentage:
+    enabled: false
+    condition: >
+      (current_bid > entry_price * (1 + percentage_change))
+      and entry_price not in [0,-1] and current_bid not in [0,-1]
+      and not is_executed_take_profits(application_state, symbol, take_profit_list=['tp1'])
+    percentage_change: 0.12
     close_type: "percentage"  # absolute or percentage
     close_quantity_percentage: 0.8
     close_quantity_remaining: 1
@@ -358,6 +382,7 @@ take_profits:
     condition: >
       current_bid > entry_price * (1 + percentage_change) 
       and entry_price not in [0,-1] and current_bid not in [0,-1]
+      and not is_executed_take_profits(application_state, symbol, take_profit_list=['tp1'])
     percentage_change: 0.15
     close_type: "percentage"  # absolute or percentage
     close_quantity_percentage: 0.8

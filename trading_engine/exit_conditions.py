@@ -587,7 +587,7 @@ def is_executed_take_profits(application_state, symbol, take_profit_list=[]): # 
     for take_profit_alias in take_profit_list:
         open_trade_info =  application_state.get('open_trades_dic',{}).get(symbol,{})
         for tp in open_trade_info.get('take_profit_history', []):
-            if tp.get('take_profit_case') == take_profit_alias:
+            if tp.get('take_profit_case').startswith(take_profit_alias):
                 return True
 
     return False

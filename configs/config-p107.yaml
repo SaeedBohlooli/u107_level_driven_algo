@@ -105,19 +105,20 @@ alarms:
 
 xui_position_defaults:
   take_profits:
-    tp1:
+
+    tp1_absolute:
+      enabled: False
+      absolute_change: 0.19
+#      close_type: "percentage"
+#      close_quantity_percentage: 0.8
+#      close_quantity_remaining: 1
+
+    tp1_percentage:
       enabled: True
       percentage_change: 0.15
-      absolute_change: 0.19
-      close_type: "percentage"
-      close_quantity_percentage: 0.8
-      close_quantity_remaining: 1
-
-    tp1_percentage_configurable:
-      enabled: True
-      percentage_change: 0.50
-      close_type: "percentage"
-      close_quantity_percentage: 0.8
+#      close_type: "percentage"
+#      close_quantity_percentage: 0.8
+#      close_quantity_remaining: 1
 
     tp6_trail_w_ema_9:
       enabled: False
@@ -130,6 +131,14 @@ xui_position_defaults:
     sl_max_x_percent:
       enabled: true
       max_loss_percentage: 0.8
+
+#    tp1_percentage_configurable:
+#      enabled: True
+#      percentage_change: 0.50
+#      close_type: "percentage"
+#      close_quantity_percentage: 0.8
+#
+
 
 child_configs:
   - config-strategy.yaml
