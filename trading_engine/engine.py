@@ -42,6 +42,10 @@ from trading_utils import user_request_router
 from trading_utils import ib_account
 from trading_utils import ib_pricing_async
 from trading_utils import json_utils
+from trading_utils import global_state
+from trading_utils import ib_marketdata_async
+
+from trading_core.tick_bar_builder import TickBarBuilder
 
 
 from utils import atr_tolerance_helper
@@ -85,6 +89,9 @@ class TradingEngine:
     async def engine_loop(self, ib):
         run_number = 0
         await application_state_helper.initialize_application_state(ib, self.app_config, self.application_state)
+
+        # global_state.tick_callbacks.append(TickBarBuilder.on_tick)
+        # logger.info("[engine] TickBarBuilder registered as tick callback")
 
         hover_df_cols = ['symbol', 'time_frame', 'object', 'color', 'date_1', 'price_1', 'date_2', 'price_2', 'memo', 'unique_id']
         TradingLedger.set_dataframe_columns("hover_df", hover_df_cols)
@@ -175,7 +182,13 @@ class TradingEngine:
                         self.application_state.setdefault('latest_prices', {})[symbol] = current_price
 
                     logger.info(f"[engine] Starting get_historical_data for {symbol}")
-                    df = await marketdata_helper.get_historical_data(ib, symbol, self.app_config, self.application_state, time_frame='1m', historical_days='3 D')
+                    if self.runtime.should_run_once(f'SUBSCRIBE_LIVE_BARS-{symbol}'):
+                        await ib_marketdata_async.subscribe_live_bars(ib,symbol)
+
+                    df = get_live_bars_df(symbol)
+
+                    # df = await marketdata_helper.get_historical_data(ib, symbol, self.app_config, self.application_state, time_frame='1m', historical_days='3 D')
+                    live_df = df
                     logger.info(f"[engine] Finished get_historical_data for {symbol}")
                     if df is None or len(df) ==0:
                         logger.warning(f"[engine] @@@@@ {symbol}, no data found, skip the symbol for now ...")
@@ -183,6 +196,8 @@ class TradingEngine:
 
                     df = inidicators.populate_features(self.app_config, df)
                     self.market_data.dfs_map[symbol] = df
+                    if False and self.runtime.should_run_once(f'CREATE_SEED-{symbol}'): # first time for each symbol
+                        TickBarBuilder.seed(symbol, df)
                     if self.application_state['is_save_time']:
                         logger.info(f"[engine] {symbol}, df: \n{df[-4:].to_markdown()}")
 
@@ -248,7 +263,63 @@ class TradingEngine:
                     symbol_run_spend_time = round(symbol_end_time - symbol_start_time, 2)
                     logger.info(f'[engine] ------------------- {symbol}, {unique_run_number}, symbol_run_spend_time: {symbol_run_spend_time} seconds')
                     self.application_state.setdefault("run_times", {})[symbol] = symbol_run_spend_time
+                    #
+                    if False and self.runtime.is_due(f'CHECK_TICKS-{symbol}', interval_sec=1*1):
+                        self.application_state.setdefault("last_rows_in_ohlc_df", {})[f"{symbol}-history"] = df[-1:].assign(date=df[-1:]['date'].astype(str)).to_dict(orient='records')
+                        df_by_ticks = TickBarBuilder.get_df(symbol)
+                        self.application_state.setdefault("last_rows_in_ohlc_df", {})[f"{symbol}-live"] = df_by_ticks[-1:].assign(date=df_by_ticks[-1:]['date'].astype(str)).to_dict(orient='records')
 
+                        if not df.empty and not df_by_ticks.empty:
+                            h = df.iloc[-1]
+                            t = df_by_ticks.iloc[-1]
+                            self.application_state.setdefault("tick_df_diff", {})[symbol] = {
+                                'date': df['date'].iloc[-1].strftime("%H:%M") + " -- tick: " + df_by_ticks['date'].iloc[-1].strftime("%H:%M"),
+                                'open_diff':  round(float(t['open'])  - float(h['open']),  4),
+                                'high_diff':  round(float(t['high'])  - float(h['high']),  4),
+                                'low_diff':   round(float(t['low'])   - float(h['low']),   4),
+                                'close_diff': round(float(t['close']) - float(h['close']), 4),
+                                'number_of_ticks': int(t['tick_count'])
+                            }
+
+                    if False and self.runtime.is_due(f'CHECK_LIVE-DF-{symbol}', interval_sec=1*1):
+                        self.application_state.setdefault("last_rows_in_ohlc_df", {})[f"{symbol}-history"] = df[-1:].assign(date=df[-1:]['date'].astype(str)).to_dict(orient='records')
+                        self.application_state.setdefault("last_rows_in_ohlc_df", {})[f"{symbol}-live"] = live_df[-1:].assign(date=live_df[-1:]['date'].astype(str)).to_dict(orient='records')
+
+                        if not df.empty and not live_df.empty:
+                            h = df.iloc[-1]
+                            t = live_df.iloc[-1]
+                            self.application_state.setdefault("tick_df_diff", {})[symbol] = {
+                                'date': df['date'].iloc[-1].strftime("%H:%M") + " -- tick: " + live_df['date'].iloc[-1].strftime("%H:%M"),
+                                'open_diff':  round(float(t['open'])  - float(h['open']),  4),
+                                'high_diff':  round(float(t['high'])  - float(h['high']),  4),
+                                'low_diff':   round(float(t['low'])   - float(h['low']),   4),
+                                'close_diff': round(float(t['close']) - float(h['close']), 4),
+                                'xmax_diff': round(max(abs(float(t['open']) - float(h['open'])),
+                                                abs(float(t['high']) - float(h['high'])),
+                                                abs(float(t['low']) - float(h['low'])),
+                                                abs(float(t['close']) - float(h['close']))), 4),
+
+                            }
+
+
+                    if self.runtime.is_due(f'CHECK_LIVE-DF-{symbol}', interval_sec=1*20):
+
+                        if not df.empty:
+                            self.application_state.setdefault("last_rows_in_ohlc_df", {})[f"{symbol}-live"] = live_df[-1:].assign(date=live_df[-1:]['date'].astype(str)).to_dict(orient='records')
+                            h = df.iloc[-1]
+                            live_p = await ib_pricing_async.get_or_subscribe_symbol_price(ib, symbol)
+                            self.application_state.setdefault("tick_df_diff", {})[symbol] = {
+                                'z_date': df['date'].iloc[-1].strftime("%H:%M") ,
+                                'a_close':  round(float(h['close']),  4),
+                                'b_live_price':   live_p,
+                                'c_diff_close_live':  round(float(h['close']) - live_p, 4)
+                            }
+
+
+                    if False and self.runtime.is_due('SAVE_TICK_BARS', interval_sec=2 * 60):
+                        # TickBarBuilder.save_all()
+                        file_name = f"{symbol}-live-df.csv"
+                        FileManager.save_my_df(live_df, dir="charts", file_name=file_name, save_tabular=False,mode='w')
 
                     # end while for symbols
 
