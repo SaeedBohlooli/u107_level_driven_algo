@@ -188,10 +188,10 @@ async def check_for_stop_loss_and_take_profit(ib, app_config, application_state,
                     'con_id': open_trade_info.get('con_id'),
                     }
                 open_trade_info.setdefault('stop_loss_history', []).append(data) # save it in the
-                archive_open_trade_dic(application_state, symbol)
-                application_state.setdefault('open_trades_dic', {})[symbol] = {}  #  TODO This need to be happened after we get required inf from dic...
-                add_order_ref_to_application_state(application_state, open_order_ref=open_trade_info.get('order_ref'), close_order_ref=order_ref)
-
+                # archive_open_trade_dic(application_state, symbol)
+                # application_state.setdefault('open_trades_dic', {})[symbol] = {}  #  TODO This need to be happened after we get required inf from dic...
+                # add_order_ref_to_application_state(application_state, open_order_ref=open_trade_info.get('order_ref'), close_order_ref=order_ref)
+                open_trade_info['available_quantity'] = 0
                 # add_to_stop_loss_history_df(data)
                 TradingLedger.add_to_dataframe('stop_loss_history_df', data)
 
