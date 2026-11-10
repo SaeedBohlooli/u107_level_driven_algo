@@ -106,7 +106,7 @@ cases:
       level: levels['5MH']
       level_alias: "5MH"
       cores:
-        - breakout_in_last_x_candles_ver_4(app_config, application_state, case, symbol, df, side='up', idx_list=list(range(-3,-17,-1)), level=long_level, level_alias=level_alias)
+        - breakout_in_last_x_candles_ver_4(app_config, application_state, case, symbol, df, side='up', idx_list=list(range(-3,-25,-1)), level=long_level, level_alias=level_alias)
         - price_retest_v2(app_config, application_state, case, symbol, df, side='up', idx_list=[-2,-3], level=long_level, level_alias=level_alias)
         - set_and_is_retest_after_breakout(application_state, symbol, case, side='up', level=long_level)
         - does_arc_has_enough_heights(app_config, application_state, case, symbol, df, side='up', level=long_level, level_alias=level_alias, min_height_atr_ratio=0.5)
@@ -124,7 +124,7 @@ cases:
       level: levels['5ML']
       level_alias: "5ML"
       cores:
-        - breakout_in_last_x_candles_ver_4(app_config, application_state, case, symbol, df, side='down', idx_list=list(range(-3,-17,-1)), level=short_level, level_alias=level_alias)
+        - breakout_in_last_x_candles_ver_4(app_config, application_state, case, symbol, df, side='down', idx_list=list(range(-3,-25,-1)), level=short_level, level_alias=level_alias)
         - price_retest_v2(app_config, application_state, case, symbol, df, side='down', idx_list=[-2,-3], level=short_level, level_alias=level_alias)
         - set_and_is_retest_after_breakout(application_state, symbol, case, side='down', level=short_level)
         - does_arc_has_enough_heights(app_config, application_state, case, symbol, df, side='down', level=short_level, level_alias=level_alias, min_height_atr_ratio=0.5)
@@ -146,7 +146,7 @@ cases:
       level: levels['PDH']
       level_alias: "PDH"
       cores:
-        - breakout_in_last_x_candles_ver_4(app_config, application_state, case, symbol, df, side='up', idx_list=list(range(-3,-17,-1)), level=long_level, level_alias=level_alias)
+        - breakout_in_last_x_candles_ver_4(app_config, application_state, case, symbol, df, side='up', idx_list=list(range(-3,-25,-1)), level=long_level, level_alias=level_alias)
         - price_retest_v2(app_config, application_state, case, symbol, df, side='up', idx_list=[-2,-3], level=long_level, level_alias=level_alias)
         - set_and_is_retest_after_breakout(application_state, symbol, case, side='up', level=long_level)
         - does_arc_has_enough_heights(app_config, application_state, case, symbol, df, side='up', level=long_level, level_alias=level_alias, min_height_atr_ratio=0.5)
@@ -163,7 +163,7 @@ cases:
       level: levels['PDL']
       level_alias: "PDL"
       cores:
-        - breakout_in_last_x_candles_ver_4(app_config, application_state, case, symbol, df, side='down', idx_list=list(range(-3,-17,-1)), level=short_level, level_alias=level_alias)
+        - breakout_in_last_x_candles_ver_4(app_config, application_state, case, symbol, df, side='down', idx_list=list(range(-3,-25,-1)), level=short_level, level_alias=level_alias)
         - price_retest_v2(app_config, application_state, case, symbol, df, side='down', idx_list=[-2,-3], level=short_level, level_alias=level_alias)
         - set_and_is_retest_after_breakout(application_state, symbol, case, side='down', level=short_level)
         - does_arc_has_enough_heights(app_config, application_state, case, symbol, df, side='down', level=short_level, level_alias=level_alias, min_height_atr_ratio=0.5)

@@ -126,6 +126,7 @@ strike_increments:  # default is 2.5., don't put it here if it i 2.5
   SNDK: 5
   GOOG: 5
   HOOD: 1
+  SPCX: 1
 
 
 options:

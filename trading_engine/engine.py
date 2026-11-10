@@ -114,10 +114,10 @@ class TradingEngine:
 
         open_close_refs_pnl_df = FileManager.load_my_df("open_close_refs_pnl_df")
         TradingLedger.set_dataframe("open_close_refs_pnl_df", open_close_refs_pnl_df)
-
+        start_time = time.time()
         while True:
             try:
-                start_time = time.time()
+
                 run_number += 1
                 current_hh_mm_ny = self.runtime.now_hhmm()
                 self.application_state["current_hh_mm_ny"] = current_hh_mm_ny
@@ -308,12 +308,26 @@ class TradingEngine:
                             self.application_state.setdefault("last_rows_in_ohlc_df", {})[f"{symbol}-live"] = live_df[-1:].assign(date=live_df[-1:]['date'].astype(str)).to_dict(orient='records')
                             h = df.iloc[-1]
                             live_p = await ib_pricing_async.get_or_subscribe_symbol_price(ib, symbol)
+                            last_bar_date = live_df['date'].iloc[-1] if not live_df.empty else df['date'].iloc[-1]
                             self.application_state.setdefault("tick_df_diff", {})[symbol] = {
-                                'z_date': df['date'].iloc[-1].strftime("%H:%M") ,
+                                'z_date': last_bar_date.strftime("%H:%M"),
                                 'a_close':  round(float(h['close']),  4),
                                 'b_live_price':   live_p,
                                 'c_diff_close_live':  round(float(h['close']) - live_p, 4)
                             }
+                            # Alert if last bar is stale (> 2 mins old during market hours)
+                            if self.application_state.get('is_market_open'):
+                                from datetime import datetime as _dt, timezone
+                                now_utc = _dt.now(timezone.utc)
+                                bar_utc = last_bar_date if last_bar_date.tzinfo else last_bar_date.replace(tzinfo=timezone.utc)
+                                age_mins = (now_utc - bar_utc).total_seconds() / 60
+                                if age_mins > 2 and self.runtime.is_due(f'STALE_BAR_ALERT-{symbol}', interval_sec=5*60):
+                                    logger.warning(f"[engine] @@@ STALE BAR: {symbol} last bar is {age_mins:.1f} mins old")
+                                    email_utils.send_email(
+                                        to_emails=self.app_config['notification']['recipients'],
+                                        subject=f"[{self.app_config.get('user_name')}] Stale bar: {symbol}",
+                                        body=f"{symbol} live bar is {age_mins:.1f} mins old. Last bar date: {last_bar_date}. keepUpToDate may have stopped updating."
+                                    )
 
 
                     if False and self.runtime.is_due('SAVE_TICK_BARS', interval_sec=2 * 60):
@@ -348,7 +362,7 @@ class TradingEngine:
                 run_time_spent = round(end_time - start_time, 2)
                 logger.info(f"[engine] ==================== unique_run_number: {unique_run_number}, run_spent_time: {run_time_spent} seconds, sleep ... {self.app_config['interval_seconds']['engine_loop']}")
                 self.application_state.setdefault("run_times", {})['engine_loop_run_time_spent'] = run_time_spent
-
+                start_time = time.time()
             except Exception as e:
                 logger.warning(f"[engine] @@@ Unexpected error in engine_loop: {e}")
                 logger.error(f"[engine] @@@ error: {traceback.format_exc()}" )
