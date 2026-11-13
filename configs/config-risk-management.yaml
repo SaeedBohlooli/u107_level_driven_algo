@@ -13,8 +13,7 @@ trading_session:
 live_cases:
   - case_7
   - case_8
-#  - case_9
-#  - case_10
+
 order_cases:
   - case_7
   - case_8

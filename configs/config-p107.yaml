@@ -108,14 +108,14 @@ xui_position_defaults:
 
     tp1_absolute:
       enabled: False
-      absolute_change: 0.19
+      absolute_change: 0.15
 #      close_type: "percentage"
 #      close_quantity_percentage: 0.8
 #      close_quantity_remaining: 1
 
     tp1_percentage:
       enabled: True
-      percentage_change: 0.15
+      percentage_change: 0.11
 #      close_type: "percentage"
 #      close_quantity_percentage: 0.8
 #      close_quantity_remaining: 1

@@ -313,10 +313,13 @@ class TradingEngine:
                                 'z_date': last_bar_date.strftime("%H:%M"),
                                 'a_close':  round(float(h['close']),  4),
                                 'b_live_price':   live_p,
-                                'c_diff_close_live':  round(float(h['close']) - live_p, 4)
+                                'c_diff_close-minus-live':  round(float(h['close']) - live_p, 4),
+                                'd_volume':  round(float(h['volume']), 4),
+                                'e_bar_count':  h['barCount'],
+                                'f_time_now': self.runtime.now_hh_mm_ss_sss(),
                             }
                             # Alert if last bar is stale (> 2 mins old during market hours)
-                            if self.application_state.get('is_market_open'):
+                            if self.application_state.get('current_hh_mm_ny') < 1600:  # Only check for stale bars during market hours
                                 from datetime import datetime as _dt, timezone
                                 now_utc = _dt.now(timezone.utc)
                                 bar_utc = last_bar_date if last_bar_date.tzinfo else last_bar_date.replace(tzinfo=timezone.utc)
