@@ -1986,16 +1986,13 @@ def is_second_candle_after(min_seconds=15):
 
 
 def has_strong_close(df, side='up'):
+    high = df['high'].iloc[-1]
+    low = df['low'].iloc[-1]
+    close = df['close'].iloc[-1]
     if side == 'up':
-        if df['close'].iloc[-1] > (df['high'].iloc[-1] + df['low'].iloc[-1]) * 0.6:
-            return True
-        else:
-            return False
+        return close > low + 0.6 * (high - low)
     else:
-        if df['close'].iloc[-1] < (df['high'].iloc[-1] + df['low'].iloc[-1]) * 0.6:
-            return True
-        else:
-            return False
+        return close < low + 0.4 * (high - low)
 
 
 def is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='up', threshold=3):

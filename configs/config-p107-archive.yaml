@@ -1,4 +1,5 @@
 cases:
+
   case_1:
     memo: trade if the levels are close to each other - we not runing this one anymore
     precondition: all_levels_in(symbol)  # , 'back_test'
@@ -344,6 +345,25 @@ cases:
         - qqq_df['close'].iloc[-1] <= qqq_df['open'].iloc[-1]
         - is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='down', threshold=5)
 
+  case_3:
+    memo: This is for Saeed's live test
+    can_replace_level: false
+    precondition: all_levels_in(application_state, symbol)
+    color: darkred
+    long:
+      level: levels['5MH']
+      level_alias: "5MH"
+      cores:
+        - symbol == 'AMD' and 1 == 2
+      extras:
+        - 1 == 1
+    short:
+      level: levels['PDL']
+      level_alias: "5ML"
+      cores:
+        - symbol == 'TSLA' and 1 == 2
+      extras:
+        - 1 == 1
 
 scores:
   s1:

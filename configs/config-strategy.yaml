@@ -23,6 +23,8 @@ cases:
         - 9 == 9
         - has_strong_close(df, side='up') or df['close'].iloc[-1] > df['high'].iloc[-2]
         - 1 == 1 or is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='up', threshold=5)
+        - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.25 * df.iloc[-2]['atr_14']
+        - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.10
 
 
     short:
@@ -42,6 +44,8 @@ cases:
         - 9 == 9
         - has_strong_close(df, side='down') or df['close'].iloc[-1] < df['low'].iloc[-2]
         - 1 == 1 or is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='down', threshold=5)
+        - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.25 * df.iloc[-2]['atr_14']
+        - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.10
 
   case_8:
     memo: based on the R2
@@ -65,6 +69,8 @@ cases:
         - 9 == 9
         - has_strong_close(df, side='up') or df['close'].iloc[-1] > df['high'].iloc[-2]
         - 1 == 1 or is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='up', threshold=5)
+        - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.25 * df.iloc[-2]['atr_14']
+        - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.10
 
     short:
       level: levels['PDL']
@@ -83,27 +89,11 @@ cases:
         - 9 == 9
         - has_strong_close(df, side='down') or df['close'].iloc[-1] < df['low'].iloc[-2]
         - 1 == 1 or is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='down', threshold=5)
+        - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.25 * df.iloc[-2]['atr_14']
+        - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.10
 
 
-  case_3:
-    memo: This is for Saeed's live test
-    can_replace_level: false
-    precondition: all_levels_in(application_state, symbol)
-    color: darkred
-    long:
-      level: levels['5MH']
-      level_alias: "5MH"
-      cores:
-        - symbol == 'AMD' and 1 == 2
-      extras:
-        - 1 == 1
-    short:
-      level: levels['PDL']
-      level_alias: "5ML"
-      cores:
-        - symbol == 'TSLA' and 1 == 2
-      extras:
-        - 1 == 1
+
 
 stop_losses:
   sl_1:
