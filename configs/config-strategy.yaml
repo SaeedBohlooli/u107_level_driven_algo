@@ -21,7 +21,8 @@ cases:
       extras:
         - is_second_candle_after(min_seconds=15)
         - 9 == 9
-        - has_strong_close(df, side='up') or df['close'].iloc[-1] > df['high'].iloc[-2]
+        - has_strong_close(df, side='up')
+        - df.iloc[-1]['close'] > long_level + 0.5 * df.iloc[-2]['atr_14'] or df.iloc[-1]['close'] > df.iloc[-2]['high']
         - 1 == 1 or is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='up', threshold=5)
         - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.25 * df.iloc[-2]['atr_14']
         - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.10
@@ -42,7 +43,8 @@ cases:
       extras:
         - is_second_candle_after(min_seconds=15)
         - 9 == 9
-        - has_strong_close(df, side='down') or df['close'].iloc[-1] < df['low'].iloc[-2]
+        - has_strong_close(df, side='down')
+        - df.iloc[-1]['close'] < short_level - 0.5 * df.iloc[-2]['atr_14'] or df.iloc[-1]['close'] < df.iloc[-2]['low']
         - 1 == 1 or is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='down', threshold=5)
         - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.25 * df.iloc[-2]['atr_14']
         - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.10
@@ -67,7 +69,8 @@ cases:
       extras:
         - is_second_candle_after(min_seconds=15)
         - 9 == 9
-        - has_strong_close(df, side='up') or df['close'].iloc[-1] > df['high'].iloc[-2]
+        - has_strong_close(df, side='up')
+        - df.iloc[-1]['close'] > long_level + 0.5 * df.iloc[-2]['atr_14'] or df.iloc[-1]['close'] > df.iloc[-2]['high']
         - 1 == 1 or is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='up', threshold=5)
         - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.25 * df.iloc[-2]['atr_14']
         - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.10
@@ -87,7 +90,8 @@ cases:
       extras:
         - is_second_candle_after(min_seconds=15)
         - 9 == 9
-        - has_strong_close(df, side='down') or df['close'].iloc[-1] < df['low'].iloc[-2]
+        - has_strong_close(df, side='down')
+        - df.iloc[-1]['close'] < short_level - 0.5 * df.iloc[-2]['atr_14'] or df.iloc[-1]['close'] < df.iloc[-2]['low']
         - 1 == 1 or is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='down', threshold=5)
         - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.25 * df.iloc[-2]['atr_14']
         - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.10
@@ -140,17 +144,6 @@ stop_losses:
 
 
 take_profits:
-#  tp1:
-#    enabled: false
-#    condition: >
-#      (current_bid > entry_price * (1 + percentage_change) or current_bid - entry_price > absolute_change)
-#      and entry_price not in [0,-1] and current_bid not in [0,-1]
-#    percentage_change: 0.12
-#    absolute_change: 0.15
-#    close_type: "percentage"  # absolute or percentage
-#    close_quantity_percentage: 0.8
-#    close_quantity_remaining: 1
-#    memo: Taking some profit at 15% or 0.15 with 4 of 6 - percentage_change comes from config
 
   tp1_absolute:
     enabled: false
@@ -322,16 +315,6 @@ take_profits:
       (right == 'P' and underlying_current_price < user_defined_take_profit and user_defined_take_profit not in [0,-1])
     close_quantity_number: user_defined_take_profit_quantity
     memo:
-
-#  tp10_cl_manual: # This is for closing everything just NVDA:   1 == 1 and symbol == 'NVDA'
-#    enabled: False
-#    condition: 1 == 2 and symbol == 'AMZN'
-#    close_quantity_percentage: .5
-#
-#  t11_cl_manual: # This is for closing everything just NVDA:   1 == 1 and symbol == 'NVDA'
-#    enabled: False
-#    condition: 1 == 3 and symbol == 'TSLA'
-#    close_quantity_percentage: 1
 
 
 closeness_distance: df['atr_14'].iloc[-2]
