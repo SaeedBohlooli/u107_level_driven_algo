@@ -1,3 +1,9 @@
+reserves:
+
+  # N candles before the breakout, ALL closes must be above the level
+  # for AMD 11-19 ....
+  d: c
+
 
 cases:
 
@@ -20,12 +26,13 @@ cases:
         - price > long_level and df.iloc[-1]['open'] > long_level and df.iloc[-1]['close'] > df.iloc[-1]['open']
       extras:
         - is_second_candle_after(min_seconds=15)
-        - 9 == 9
         - has_strong_close(df, side='up')
         - df.iloc[-1]['close'] > long_level + 0.5 * df.iloc[-2]['atr_14'] or df.iloc[-1]['close'] > df.iloc[-2]['high']
         - 1 == 1 or is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='up', threshold=5)
         - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.25 * df.iloc[-2]['atr_14']
         - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.10
+        - arc_does_not_cross_level(application_state, case, symbol, df, long_level, side='up', tolerance=0.5)
+        - check_pre_breakout_alignment(app_config, application_state, case, symbol, df, side='up', level=long_level, level_alias=level_alias, n_candles=5, threshold_atr_ratio=0.5)
 
 
     short:
@@ -42,12 +49,13 @@ cases:
         - price < short_level and df.iloc[-1]['open'] < short_level and df.iloc[-1]['close'] < df.iloc[-1]['open']
       extras:
         - is_second_candle_after(min_seconds=15)
-        - 9 == 9
         - has_strong_close(df, side='down')
         - df.iloc[-1]['close'] < short_level - 0.5 * df.iloc[-2]['atr_14'] or df.iloc[-1]['close'] < df.iloc[-2]['low']
         - 1 == 1 or is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='down', threshold=5)
         - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.25 * df.iloc[-2]['atr_14']
         - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.10
+        - arc_does_not_cross_level(application_state, case, symbol, df, short_level, side='down', tolerance=0.5)
+        - check_pre_breakout_alignment(app_config, application_state, case, symbol, df, side='down', level=short_level, level_alias=level_alias, n_candles=5, threshold_atr_ratio=0.5)
 
   case_8:
     memo: based on the R2
@@ -68,12 +76,13 @@ cases:
         - price > long_level and df.iloc[-1]['open'] > long_level and df.iloc[-1]['close'] > df.iloc[-1]['open']
       extras:
         - is_second_candle_after(min_seconds=15)
-        - 9 == 9
         - has_strong_close(df, side='up')
         - df.iloc[-1]['close'] > long_level + 0.5 * df.iloc[-2]['atr_14'] or df.iloc[-1]['close'] > df.iloc[-2]['high']
         - 1 == 1 or is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='up', threshold=5)
         - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.25 * df.iloc[-2]['atr_14']
         - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.10
+        - arc_does_not_cross_level(application_state, case, symbol, df, long_level, side='up', tolerance=0.5)
+        - check_pre_breakout_alignment(app_config, application_state, case, symbol, df, side='up', level=long_level, level_alias=level_alias, n_candles=5, threshold_atr_ratio=0.5)
 
     short:
       level: levels['PDL']
@@ -89,12 +98,13 @@ cases:
         - price < short_level and df.iloc[-1]['open'] < short_level and df.iloc[-1]['close'] < df.iloc[-1]['open']
       extras:
         - is_second_candle_after(min_seconds=15)
-        - 9 == 9
         - has_strong_close(df, side='down')
         - df.iloc[-1]['close'] < short_level - 0.5 * df.iloc[-2]['atr_14'] or df.iloc[-1]['close'] < df.iloc[-2]['low']
         - 1 == 1 or is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='down', threshold=5)
         - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.25 * df.iloc[-2]['atr_14']
         - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.10
+        - arc_does_not_cross_level(application_state, case, symbol, df, short_level, side='down', tolerance=0.5)
+        - check_pre_breakout_alignment(app_config, application_state, case, symbol, df, side='down', level=short_level, level_alias=level_alias, n_candles=5, threshold_atr_ratio=0.5)
 
 
 

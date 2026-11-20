@@ -1977,6 +1977,53 @@ def check_arc_hump(app_config, application_state, case, symbol, df, side='up', l
     return True
 
 
+def arc_does_not_cross_level(application_state, case, symbol, df, level, side='down', tolerance=0.5):
+    """
+    Arc validity filter: ensures that during the arc phase (breakout → retest),
+    closes do not cross back through the level.
+
+    For shorts (side='down'): arc closes must stay below level + tolerance * ATR.
+    For longs  (side='up'):   arc closes must stay above level - tolerance * ATR.
+
+    The tolerance gives a small breathing space so a minor wick above/below
+    doesn't invalidate an otherwise valid arc (default 0.5 × ATR).
+
+    Returns False if breakout_idx or retest_idx are missing, or if the arc
+    window is empty.
+    """
+    breakout_idx = get_breakout_idx(application_state, case, symbol, level)
+    retest_idx = get_retest_idx(application_state, case, symbol, level)
+
+    if breakout_idx is None or retest_idx is None:
+        logger.warning(
+            f"[arc_does_not_cross_level] {symbol} — missing idx (breakout:{breakout_idx} retest:{retest_idx}), returning False")
+        return False
+
+    if breakout_idx >= retest_idx:
+        logger.warning(
+            f"[arc_does_not_cross_level] {symbol} — breakout_idx({breakout_idx}) >= retest_idx({retest_idx}), returning False")
+        return False
+
+    arc_df = df.iloc[breakout_idx:retest_idx]
+    if arc_df.empty:
+        logger.warning(f"[arc_does_not_cross_level] {symbol} — arc window is empty, returning False")
+        return False
+
+    atr = df.iloc[-2]['atr_14']
+    if side == 'down':
+        threshold = level + tolerance * atr
+        result = arc_df['close'].max() < threshold
+        logger.info(
+            f"[arc_does_not_cross_level] {symbol} side:{side} arc_max_close:{arc_df['close'].max():.4f} threshold:{threshold:.4f} -> {'PASS' if result else 'FAIL'}")
+    else:
+        threshold = level - tolerance * atr
+        result = arc_df['close'].min() > threshold
+        logger.info(
+            f"[arc_does_not_cross_level] {symbol} side:{side} arc_min_close:{arc_df['close'].min():.4f} threshold:{threshold:.4f} -> {'PASS' if result else 'FAIL'}")
+
+    return result
+
+
 def is_second_candle_after(min_seconds=15):
     """
     Returns True if the current time is past min_seconds within the current minute.
@@ -1993,6 +2040,63 @@ def has_strong_close(df, side='up'):
         return close > low + 0.6 * (high - low)
     else:
         return close < low + 0.4 * (high - low)
+
+
+def check_pre_breakout_alignment(app_config, application_state, case, symbol, df, side='up',
+                                  level=None, level_alias=None,
+                                  n_candles=5, threshold_atr_ratio=0.5):
+    """
+    Pre-Breakout Alignment filter.
+
+    Verifies that the N candles immediately before the breakout bar were cleanly
+    positioned on the correct side of the level — confirming price genuinely broke
+    from a clean zone rather than from choppy price action around the level.
+
+    For side='up'  (long):  all N closes must be BELOW the level
+                            → max(closes) < level + threshold_atr_ratio * ATR(14)
+    For side='down' (short): all N closes must be ABOVE the level
+                            → min(closes) > level - threshold_atr_ratio * ATR(14)
+
+    Parameters:
+        n_candles           : number of candles before breakout to check (default 5)
+        threshold_atr_ratio : ATR(14) multiplier added as breathing room (default 0.0 = strict)
+                              e.g. 0.5 allows closes up to half an ATR past the level
+    """
+    if not level:
+        logger.info(f"[check_pre_breakout_alignment] {symbol} — no level provided")
+        return False
+
+    breakout_idx = get_breakout_idx(application_state, case, symbol, level)
+    if breakout_idx is None:
+        logger.info(f"[check_pre_breakout_alignment] {symbol} {level_alias} — no breakout recorded for level {level}")
+        return False
+
+    atr_14 = df['atr_14'].iloc[-2]
+    if atr_14 <= 0:
+        logger.warning(f"[check_pre_breakout_alignment] {symbol} {level_alias} — atr_14 is zero/negative, skipping")
+        return False
+
+    threshold_pts = threshold_atr_ratio * atr_14
+    window = df.iloc[breakout_idx - n_candles: breakout_idx]
+
+    if window.empty:
+        logger.info(f"[check_pre_breakout_alignment] {symbol} {level_alias} — not enough bars before breakout_idx={breakout_idx}")
+        return False
+
+    if side == 'up':
+        extreme = window['close'].max()
+        passed = extreme < level + threshold_pts
+    else:
+        extreme = window['close'].min()
+        passed = extreme > level - threshold_pts
+
+    logger.info(
+        f"[check_pre_breakout_alignment] {symbol} {level_alias} side:{side} "
+        f"level:{level:.4f} breakout_idx:{breakout_idx} n_candles:{n_candles} "
+        f"threshold_atr_ratio:{threshold_atr_ratio} threshold_pts:{threshold_pts:.4f} "
+        f"{'max' if side == 'up' else 'min'}_close:{extreme:.4f} -> {'PASS' if passed else 'FAIL'}"
+    )
+    return passed
 
 
 def is_symbol_in_rs_shortlist(app_config, application_state, symbol, side='up', threshold=3):
