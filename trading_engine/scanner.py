@@ -2024,6 +2024,71 @@ def arc_does_not_cross_level(application_state, case, symbol, df, level, side='d
     return result
 
 
+def check_arc_concavity(application_state, case, symbol, df, level, side='down', min_concavity_ratio=2.0):
+    """
+    Arc Concavity filter — detects a genuine half-circle (U/dome) arc shape.
+
+    A well-formed B&R arc has a "clean interior": most candles close near the
+    level, and only the peak dips deep. This creates visible empty space inside
+    the arc — the half-circle the trader sees on the chart.
+
+    Measured as:
+        peak_depth = distance from level to arc's deepest close
+        mean_depth = average distance of all arc closes from the level
+        concavity  = peak_depth / mean_depth
+
+    A perfect half-circle has concavity ≈ π/2 ≈ 1.57.
+    A slope (candles evenly distributed) has concavity ≈ 1.0.
+    Recommended threshold: 2.0 (most candles cluster near the level).
+
+    For shorts (side='down'): measures distances below the level.
+    For longs  (side='up'):   measures distances above the level.
+
+    Returns False if breakout_idx or retest_idx are missing, arc is empty,
+    or mean_depth is zero (all candles at the level).
+    """
+    breakout_idx = get_breakout_idx(application_state, case, symbol, level)
+    retest_idx = get_retest_idx(application_state, case, symbol, level)
+
+    if breakout_idx is None or retest_idx is None:
+        logger.warning(
+            f"[check_arc_concavity] {symbol} — missing idx (breakout:{breakout_idx} retest:{retest_idx}), returning False")
+        return False
+
+    if breakout_idx >= retest_idx:
+        logger.warning(
+            f"[check_arc_concavity] {symbol} — breakout_idx({breakout_idx}) >= retest_idx({retest_idx}), returning False")
+        return False
+
+    arc_df = df.iloc[breakout_idx:retest_idx]
+    if arc_df.empty:
+        logger.warning(f"[check_arc_concavity] {symbol} — arc window is empty, returning False")
+        return False
+
+    if side == 'down':
+        depths = (level - arc_df['close']).clip(lower=0)
+        peak_depth = depths.max()
+    else:
+        depths = (arc_df['close'] - level).clip(lower=0)
+        peak_depth = depths.max()
+
+    mean_depth = depths.mean()
+
+    if mean_depth <= 0:
+        logger.warning(f"[check_arc_concavity] {symbol} — mean_depth is zero (all closes at/above level), returning False")
+        return False
+
+    concavity = peak_depth / mean_depth
+    result = concavity >= min_concavity_ratio
+
+    logger.info(
+        f"[check_arc_concavity] {symbol} side:{side} "
+        f"peak_depth:{peak_depth:.4f} mean_depth:{mean_depth:.4f} "
+        f"concavity:{concavity:.2f} threshold:{min_concavity_ratio} -> {'PASS' if result else 'FAIL'}")
+
+    return result
+
+
 def is_second_candle_after(min_seconds=15):
     """
     Returns True if the current time is past min_seconds within the current minute.

@@ -33,6 +33,7 @@ cases:
         - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.10
         - arc_does_not_cross_level(application_state, case, symbol, df, long_level, side='up', tolerance=0.5)
         - check_pre_breakout_alignment(app_config, application_state, case, symbol, df, side='up', level=long_level, level_alias=level_alias, n_candles=5, threshold_atr_ratio=0.5)
+        - check_arc_concavity(application_state, case, symbol, df, long_level, side='up', min_concavity_ratio=2.0)
 
 
     short:
@@ -56,6 +57,7 @@ cases:
         - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.10
         - arc_does_not_cross_level(application_state, case, symbol, df, short_level, side='down', tolerance=0.5)
         - check_pre_breakout_alignment(app_config, application_state, case, symbol, df, side='down', level=short_level, level_alias=level_alias, n_candles=5, threshold_atr_ratio=0.5)
+        - check_arc_concavity(application_state, case, symbol, df, short_level, side='down', min_concavity_ratio=2.0)
 
   case_8:
     memo: based on the R2
@@ -83,6 +85,7 @@ cases:
         - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.10
         - arc_does_not_cross_level(application_state, case, symbol, df, long_level, side='up', tolerance=0.5)
         - check_pre_breakout_alignment(app_config, application_state, case, symbol, df, side='up', level=long_level, level_alias=level_alias, n_candles=5, threshold_atr_ratio=0.5)
+        - check_arc_concavity(application_state, case, symbol, df, long_level, side='up', min_concavity_ratio=2.0)
 
     short:
       level: levels['PDL']
@@ -105,6 +108,7 @@ cases:
         - abs(df.iloc[-1]['open'] - df.iloc[-1]['close']) > 0.10
         - arc_does_not_cross_level(application_state, case, symbol, df, short_level, side='down', tolerance=0.5)
         - check_pre_breakout_alignment(app_config, application_state, case, symbol, df, side='down', level=short_level, level_alias=level_alias, n_candles=5, threshold_atr_ratio=0.5)
+        - check_arc_concavity(application_state, case, symbol, df, short_level, side='down', min_concavity_ratio=2.0)
 
 
 
