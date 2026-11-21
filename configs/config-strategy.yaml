@@ -163,7 +163,7 @@ take_profits:
       and not is_executed_take_profits(application_state, symbol, take_profit_list=['tp1'])
     absolute_change: 0.15
     close_type: "percentage"  # absolute or percentage
-    close_quantity_percentage: 0.8
+    close_quantity_percentage: 0.7
     close_quantity_remaining: 1
     memo: Taking some profit at 15% or 0.15 with 4 of 6 - percentage_change comes from config
 
@@ -175,7 +175,7 @@ take_profits:
       and not is_executed_take_profits(application_state, symbol, take_profit_list=['tp1'])
     percentage_change: 0.12
     close_type: "percentage"  # absolute or percentage
-    close_quantity_percentage: 0.8
+    close_quantity_percentage: 0.7
     close_quantity_remaining: 1
     memo: Taking some profit at 15% or 0.15 with 4 of 6 - percentage_change comes from config
 
@@ -252,7 +252,7 @@ take_profits:
     condition: >
         ( right == 'C' 
           and current_bid > entry_price
-          and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
+          and (skip_tp1_check or is_executed_take_profits(application_state, symbol, take_profit_list=['tp1'])) 
           and symbol_df['close'].iloc[-4] > symbol_df['ema_9'].iloc[-4] 
           and symbol_df['close'].iloc[-3] > symbol_df['ema_9'].iloc[-3]
           and symbol_df['close'].iloc[-2] < symbol_df['ema_9'].iloc[-2]
@@ -260,12 +260,13 @@ take_profits:
         or
         ( right == 'P' 
           and current_bid > entry_price
-          and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
+          and (skip_tp1_check or is_executed_take_profits(application_state, symbol, take_profit_list=['tp1'])) 
           and symbol_df['close'].iloc[-4] < symbol_df['ema_9'].iloc[-4]
           and symbol_df['close'].iloc[-3] < symbol_df['ema_9'].iloc[-3] 
           and symbol_df['close'].iloc[-2] > symbol_df['ema_9'].iloc[-2]
         )
     close_quantity_percentage: 1
+    skip_tp1_check: false
     memo: for long after tp1, if we go below last down close candle, then we close the position and vice versa for short
 
 
@@ -274,7 +275,7 @@ take_profits:
     condition: >
         ( right == 'C' 
           and current_bid > entry_price
-          and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
+          and (skip_tp1_check or is_executed_take_profits(application_state, symbol, take_profit_list=['tp1'])) 
           and symbol_df['close'].iloc[-3] > symbol_df['ema_21'].iloc[-3]
           and symbol_df['close'].iloc[-2] > symbol_df['ema_21'].iloc[-2] 
           and symbol_df['close'].iloc[-1] < symbol_df['ema_21'].iloc[-2]
@@ -282,12 +283,13 @@ take_profits:
         or
         ( right == 'P' 
           and current_bid > entry_price
-          and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
+          and (skip_tp1_check or is_executed_take_profits(application_state, symbol, take_profit_list=['tp1'])) 
           and symbol_df['close'].iloc[-3] < symbol_df['ema_21'].iloc[-3]
           and symbol_df['close'].iloc[-2] < symbol_df['ema_21'].iloc[-2] 
           and symbol_df['close'].iloc[-1] > symbol_df['ema_21'].iloc[-2]
         )
     close_quantity_percentage: 1
+    skip_tp1_check: false
     memo: for long after tp1, if we go below last down close candle, then we close the position and vice versa for short
 
   tp6_trail_w_ema_75:

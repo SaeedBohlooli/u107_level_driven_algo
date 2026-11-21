@@ -266,12 +266,15 @@ async def check_for_stop_loss_and_take_profit(ib, app_config, application_state,
             percentage_change = app_config["take_profits"][take_profit_lable].get('percentage_change', 0)
             absolute_change = app_config["take_profits"][take_profit_lable].get('absolute_change', 0)
             close_quantity_number = app_config['take_profits'][take_profit_lable].get('close_quantity_number', "1*0") # comes from user ui, saved in
+            skip_tp1_check = app_config['take_profits'][take_profit_lable].get('skip_tp1_check', False) # user in config ...
 
             # overriding from xui_position_setting if it is provided ...
             if xui_position_setting.get("take_profits",{}).get(take_profit_lable, {}).get('percentage_change') is not None:
                 percentage_change = float(xui_position_setting.get("take_profits",{}).get(take_profit_lable, {}).get('percentage_change'))
             if xui_position_setting.get("take_profits",{}).get(take_profit_lable, {}).get('absolute_change') is not None:
                 absolute_change = float(xui_position_setting.get("take_profits",{}).get(take_profit_lable, {}).get('absolute_change'))
+            if xui_position_setting.get("take_profits",{}).get(take_profit_lable, {}).get('skip_tp1_check') is not None:
+                skip_tp1_check = xui_position_setting.get("take_profits",{}).get(take_profit_lable, {}).get('skip_tp1_check')
 
 
 

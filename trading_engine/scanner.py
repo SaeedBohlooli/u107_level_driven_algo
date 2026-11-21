@@ -2077,7 +2077,7 @@ def check_pre_breakout_alignment(app_config, application_state, case, symbol, df
         return False
 
     threshold_pts = threshold_atr_ratio * atr_14
-    window = df.iloc[breakout_idx - n_candles: breakout_idx]
+    window = df.iloc[breakout_idx - n_candles: breakout_idx - 3]
 
     if window.empty:
         logger.info(f"[check_pre_breakout_alignment] {symbol} {level_alias} — not enough bars before breakout_idx={breakout_idx}")

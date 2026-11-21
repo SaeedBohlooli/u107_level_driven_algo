@@ -1,7 +1,6 @@
 symbols_meta:
   QQQ:
     group: Index
-    can_trade: false
     contract_type: Equity
     min_required_move_from_level: 0.25
     breakout_confirmation_distance: 0.15
@@ -9,60 +8,8 @@ symbols_meta:
     retest_tolerance_multiplier: 1
     exchange: CBOE
     expiry_offset: 1
-  TSLA:
-    group: G1
-    can_trade: true
-    contract_type: Equity
-    min_required_move_from_level: 0.25
-    breakout_confirmation_distance: 0.15
-    price_step_per_mark: 1
-    retest_tolerance_multiplier: 1
-  AAPL:
-    can_trade: true
-    contract_type: Equity
-    min_required_move_from_level: 0.25
-    breakout_confirmation_distance: 0.15
-    price_step_per_mark: 0.5
-    retest_tolerance_multiplier: 1
-  NVDA:
-    can_trade: true
-    contract_type: Equity
-    min_required_move_from_level: 0.25
-    breakout_confirmation_distance: 0.15
-    price_step_per_mark: 0.5
-    retest_tolerance_multiplier: 1
-  AMD:
-    can_trade: true
-    contract_type: Equity
-    min_required_move_from_level: 0.25
-    breakout_confirmation_distance: 0.15
-    price_step_per_mark: 0.5
-    retest_tolerance_multiplier: 1
-  PLTR:
-    can_trade: true
-    contract_type: Equity
-    min_required_move_from_level: 0.25
-    breakout_confirmation_distance: 0.15
-    price_step_per_mark: 0.5
-    retest_tolerance_multiplier: 1
-  MU:
-    can_trade: true
-    contract_type: Equity
-    min_required_move_from_level: 0.25
-    breakout_confirmation_distance: 0.15
-    price_step_per_mark: 0.5
-    retest_tolerance_multiplier: 1
-  TSLL:
-    group: G1
-    can_trade: true
-    contract_type: Equity
-    min_required_move_from_level: 0.04
-    breakout_confirmation_distance: 0.07
-    price_step_per_mark: 0.5
-    retest_tolerance_multiplier: 1.8
   SPY:
     group: Index
-    can_trade: false
     contract_type: Equity
     min_required_move_from_level: 0.25
     breakout_confirmation_distance: 0.15
@@ -70,8 +17,51 @@ symbols_meta:
     retest_tolerance_multiplier: 2
     exchange: CBOE
     expiry_offset: 1
+  TSLA:
+    group: G1
+    contract_type: Equity
+    min_required_move_from_level: 0.25
+    breakout_confirmation_distance: 0.15
+    price_step_per_mark: 1
+    retest_tolerance_multiplier: 1
+  AAPL:
+    contract_type: Equity
+    min_required_move_from_level: 0.25
+    breakout_confirmation_distance: 0.15
+    price_step_per_mark: 0.5
+    retest_tolerance_multiplier: 1
+  NVDA:
+    contract_type: Equity
+    min_required_move_from_level: 0.25
+    breakout_confirmation_distance: 0.15
+    price_step_per_mark: 0.5
+    retest_tolerance_multiplier: 1
+  AMD:
+    contract_type: Equity
+    min_required_move_from_level: 0.25
+    breakout_confirmation_distance: 0.15
+    price_step_per_mark: 0.5
+    retest_tolerance_multiplier: 1
+  PLTR:
+    contract_type: Equity
+    min_required_move_from_level: 0.25
+    breakout_confirmation_distance: 0.15
+    price_step_per_mark: 0.5
+    retest_tolerance_multiplier: 1
+  MU:
+    contract_type: Equity
+    min_required_move_from_level: 0.25
+    breakout_confirmation_distance: 0.15
+    price_step_per_mark: 0.5
+    retest_tolerance_multiplier: 1
+  TSLL:
+    group: G1
+    contract_type: Equity
+    min_required_move_from_level: 0.04
+    breakout_confirmation_distance: 0.07
+    price_step_per_mark: 0.5
+    retest_tolerance_multiplier: 1.8
   MNQ:
-    can_trade: false
     contract_type: Future
     min_required_move_from_level: 5
     breakout_confirmation_distance: 2
@@ -85,7 +75,6 @@ symbols_meta:
       stop_loss: level_used + ( dynamic_tolerance.get('tolerance', 0) * app_config['symbols_meta'][symbol].get('retest_tolerance_multiplier', 1))
       take_profit: df['close'].iloc[-1] - (df['atr_14'].iloc[-2] * 2 )
   AMZN:
-    can_trade: true
     contract_type: Equity
     min_required_move_from_level: 0.25
     breakout_confirmation_distance: 0.15
@@ -103,20 +92,20 @@ symbols:
   - TSLA
   - SPY
   - INTC
-  - HOOD
-  - SPCX
+#  - HOOD
+#  - SPCX
 #  - MSFT
 #  - MRVL
 #  - WDC
 #  - META
 #  - SNDK
 #  - GOOG
-#  - MU
+  - MU
 
 
 symbols_can_not_trade:
-    - QQQ
-    - SPY
+  - QQQ
+  - SPY
 
 strike_increments:  # default is 2.5., don't put it here if it i 2.5
   QQQ: 1

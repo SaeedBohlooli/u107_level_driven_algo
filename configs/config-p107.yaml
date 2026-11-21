@@ -115,17 +115,20 @@ xui_position_defaults:
 
     tp1_percentage:
       enabled: True
-      percentage_change: 0.11
+      percentage_change: 0.08
 #      close_type: "percentage"
 #      close_quantity_percentage: 0.8
 #      close_quantity_remaining: 1
 
     tp6_trail_w_ema_9:
       enabled: False
+      skip_tp1_check: false
     tp6_trail_w_ema_21:
       enabled: True
+      skip_tp1_check: false
     tp6_trail_w_ema_75:
       enabled: False
+      skip_tp1_check: false
 
   stop_losses:
     sl_max_x_percent:
