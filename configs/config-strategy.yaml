@@ -177,11 +177,11 @@ take_profits:
       (current_bid > entry_price * (1 + percentage_change))
       and entry_price not in [0,-1] and current_bid not in [0,-1]
       and not is_executed_take_profits(application_state, symbol, take_profit_list=['tp1'])
-    percentage_change: 0.12
+    percentage_change: 0.08
     close_type: "percentage"  # absolute or percentage
     close_quantity_percentage: 0.7
     close_quantity_remaining: 1
-    memo: Taking some profit at 15% or 0.15 with 4 of 6 - percentage_change comes from config
+    memo: Taking some profit at 8% or 0.08 with 4 of 6 - percentage_change comes from config
 
   tp1_percentage_configurable:
     enabled: false
@@ -193,63 +193,63 @@ take_profits:
     close_type: "percentage"  # absolute or percentage
     close_quantity_percentage: 0.8
     close_quantity_remaining: 1
-    memo: Taking some profit at 15% or 0.20 with 4 of 6 - percentage_change comes from config
+    memo: Taking some profit at 15% or 0.15 with 4 of 6 - percentage_change comes from config
 
-  tp2:
-    enabled: false
-    condition: >
-      (current_bid > entry_price * 1.30 or current_bid - entry_price > 0.70)
-      and entry_price not in [0,-1] and current_bid not in [0,-1]
-    close_quantity_percentage: 0.20
-    close_type: "percentage"  # absolute or percentage
-    memo: Taking some profit at 30% or 0.80 with 1 of 6
+#  tp2:
+#    enabled: false
+#    condition: >
+#      (current_bid > entry_price * 1.30 or current_bid - entry_price > 0.70)
+#      and entry_price not in [0,-1] and current_bid not in [0,-1]
+#    close_quantity_percentage: 0.20
+#    close_type: "percentage"  # absolute or percentage
+#    memo: Taking some profit at 30% or 0.30 with 1 of 6
 
-  tp3:
-    enabled: false
-    condition: >
-      (current_bid > entry_price * 1.60 )
-      and entry_price not in [0,-1] and current_bid not in [0,-1]
-    close_quantity_percentage: 1
-    memo: Taking all profit at 60%
+#  tp3:
+#    enabled: false
+#    condition: >
+#      (current_bid > entry_price * 1.60 )
+#      and entry_price not in [0,-1] and current_bid not in [0,-1]
+#    close_quantity_percentage: 1
+#    memo: Taking all profit at 60%
 
-  tp4_ev_if_tp1:
-    enabled: false
-    condition: >
-      (right == 'C' and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
-        and underlying_previous_candle_close < entry_underlying_price)
-      or
-      (right == 'P' and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1']) 
-        and underlying_previous_candle_close > entry_underlying_price)
-    close_quantity_percentage: 1
-    memo: This is for break even - if we hit TP1, then we go for break even
+#  tp4_ev_if_tp1:
+#    enabled: false
+#    condition: >
+#      (right == 'C' and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1'])
+#        and underlying_previous_candle_close < entry_underlying_price)
+#      or
+#      (right == 'P' and is_executed_take_profits(application_state, symbol, take_profit_list=['tp1'])
+#        and underlying_previous_candle_close > entry_underlying_price)
+#    close_quantity_percentage: 1
+#    memo: This is for break even - if we hit TP1, then we go for break even
 
-  tp4_ev_if_tp2:
-    enabled: false
-    condition: >
-      (right == 'C' and is_executed_take_profits(application_state, symbol, take_profit_list=['tp2']) 
-        and underlying_previous_candle_close < entry_underlying_price)
-      or
-      (right == 'P' and is_executed_take_profits(application_state, symbol, take_profit_list=['tp2']) 
-        and underlying_previous_candle_close > entry_underlying_price)
-    close_quantity_percentage: 1
-    memo: This is for break even - if we hit TP2, then we go for break even
+#  tp4_ev_if_tp2:
+#    enabled: false
+#    condition: >
+#      (right == 'C' and is_executed_take_profits(application_state, symbol, take_profit_list=['tp2'])
+#        and underlying_previous_candle_close < entry_underlying_price)
+#      or
+#      (right == 'P' and is_executed_take_profits(application_state, symbol, take_profit_list=['tp2'])
+#        and underlying_previous_candle_close > entry_underlying_price)
+#    close_quantity_percentage: 1
+#    memo: This is for break even - if we hit TP2, then we go for break even
 
-  tp5_cr_lv:
-    enabled: false
-    condition: >
-      (right == 'C' and is_price_crossed_levels(application_state, side='up', symbol=symbol, next_levels=['PDH'], 
-            current_price=underlying_current_price, entry_underlying_price=entry_underlying_price))
-      or
-      (right == 'P' and is_price_crossed_levels(application_state, side='down', symbol=symbol, next_levels=['PDL'], 
-            current_price=underlying_current_price, entry_underlying_price=entry_underlying_price))
-    close_quantity_percentage: 0.5
-    memo: if we entered below major level and crossing level, we dump some ...
+#  tp5_cr_lv:
+#    enabled: false
+#    condition: >
+#      (right == 'C' and is_price_crossed_levels(application_state, side='up', symbol=symbol, next_levels=['PDH'],
+#            current_price=underlying_current_price, entry_underlying_price=entry_underlying_price))
+#      or
+#      (right == 'P' and is_price_crossed_levels(application_state, side='down', symbol=symbol, next_levels=['PDL'],
+#            current_price=underlying_current_price, entry_underlying_price=entry_underlying_price))
+#    close_quantity_percentage: 0.5
+#    memo: if we entered below major level and crossing level, we dump some ...
 
-  tp6_trail_tp1:
-    enabled: false
-    condition: check_mark_revers_candles(application_state, symbol, take_profit_alias='tp2', market_data=market_data)
-    close_quantity_percentage: 1
-    memo: for long after tp1, if we go below last down close candle, then we close the position and vice versa for short
+#  tp6_trail_tp1:
+#    enabled: false
+#    condition: check_mark_revers_candles(application_state, symbol, take_profit_alias='tp2', market_data=market_data)
+#    close_quantity_percentage: 1
+#    memo: for long after tp1, if we go below last down close candle, then we close the position and vice versa for short
 
   tp6_trail_w_ema_9:
     enabled: false
